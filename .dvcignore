@@ -1,0 +1,6 @@
+# Ignore logs and temp files
+*.pyc
+__pycache__/
+logs/
+venv/
+.git/

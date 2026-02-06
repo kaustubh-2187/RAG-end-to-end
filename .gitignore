@@ -1,0 +1,17 @@
+# Python-generated files
+.env
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+gen-lang-client-0068855436-6ac47f371465.json
+
+# Virtual environments
+.venv
+logs/
+faiss_index/
+data/
+/data
+/faiss_index

@@ -1,0 +1,5 @@
+[core]
+    remote = myremote
+['remote "myremote"']
+    url = gs://rag-dvc-storage/dvc-storage
+    credentialpath = C:\Users\kaust\Python\Projects\RAG\gen-lang-client-0068855436-6ac47f371465.json
