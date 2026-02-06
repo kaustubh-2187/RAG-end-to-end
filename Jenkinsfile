@@ -19,7 +19,7 @@ pipeline {
                     branches: [[name: '*/main']],
                     userRemoteConfigs: [[
                         credentialsId: 'github-token',
-                        url: 'https://github.com/kaustubh-2187/RAG.git'
+                        url: 'https://github.com/kaustubh-2187/RAG-end-to-end.git'
                     ]]
                 )
             }
