@@ -84,14 +84,13 @@ class ModelLoader:
         Load and return the configured LLM model.
         """
         llm_block = self.config["llm"]
-        provider_key = os.getenv("LLM_PROVIDER", "google")
+        provider = llm_block.get("provider", "groq")
 
-        if provider_key not in llm_block:
-            log.error("LLM provider not found in config", provider=provider_key)
-            raise ValueError(f"LLM provider '{provider_key}' not found in config")
+        # if provider_key not in llm_block:
+        #     log.error("LLM provider not found in config", provider=provider_key)
+        #     raise ValueError(f"LLM provider '{provider_key}' not found in config")
 
-        llm_config = llm_block[provider_key]
-        provider = llm_config.get("provider")
+        llm_config = llm_block[provider]
         model_name = llm_config.get("model_name")
         temperature = llm_config.get("temperature", 0.2)
         max_tokens = llm_config.get("max_output_tokens", 2048)
@@ -109,7 +108,7 @@ class ModelLoader:
         elif provider == "groq":
             return ChatGroq(
                 model_name=model_name,
-                groq_api_key=self.api_key_mgr.get("GROQ_API_KEY"), #type: ignore
+                groq_api_key=self.api_key_mgr.get("GROQ_API_KEY"),
                 temperature=temperature,
             )
 

@@ -11,14 +11,14 @@ retriever:
 
 llm:
 
+  provider: "groq"
+
   groq:
-    provider: "groq"
     model_name: "llama-3.3-70b-versatile"
     temperature: 0
     max_output_tokens: 2048
 
   google:
-    provider: "google"
-    model_name: "gemini-1.5-flash"
+    model_name: "gemini-2.5-flash"
     temperature: 0
     max_output_tokens: 2048
