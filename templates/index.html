@@ -4,141 +4,892 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RAG Application</title>
-  <link rel="stylesheet" href="/static/styles.css" />
-  <script>
-    const $ = (sel) => document.querySelector(sel);
-    let sessionId = localStorage.getItem('mdc_session_id') || '';
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-    async function uploadFiles(evt) {
-      evt.preventDefault();
-      const input = $('#file-input');
-      const files = input.files;
-      if (!files || files.length === 0) {
-        toast('Please choose at least one file');
-        return;
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #f5f5f7;
+      color: #1d1d1f;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Header */
+    header {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      padding: 1rem 2rem;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+    }
+
+    header h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1d1d1f;
+      letter-spacing: -0.5px;
+    }
+
+    /* Main Container */
+    .container {
+      display: flex;
+      height: calc(100vh - 65px);
+      margin-top: 65px;
+    }
+
+    /* Left Sidebar - 20% */
+    .sidebar {
+      width: 20%;
+      min-width: 250px;
+      background: #ffffff;
+      border-right: 1px solid rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      padding: 1.5rem 1.25rem 1rem;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .upload-btn {
+      width: 100%;
+      background: #007aff;
+      color: white;
+      border: none;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .upload-btn:hover {
+      background: #0051d5;
+    }
+
+    .upload-btn:disabled {
+      background: #c7c7cc;
+      cursor: not-allowed;
+    }
+
+    /* Document List */
+    .document-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.5rem;
+    }
+
+    .document-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .document-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .document-list::-webkit-scrollbar-thumb {
+      background: #c7c7cc;
+      border-radius: 3px;
+    }
+
+    .document-item {
+      background: #f5f5f7;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .document-item:hover {
+      background: #e8e8ed;
+    }
+
+    .document-item.active {
+      background: #007aff;
+      color: white;
+      border-color: #007aff;
+    }
+
+    .doc-name {
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      word-break: break-word;
+    }
+
+    .doc-type {
+      font-size: 0.75rem;
+      opacity: 0.7;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .empty-state {
+      padding: 2rem 1.25rem;
+      text-align: center;
+      color: #86868b;
+      font-size: 0.85rem;
+    }
+
+    /* Right Main Area - 80% */
+    .main-area {
+      flex: 1;
+      background: #f5f5f7;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 1000px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Welcome State */
+    .welcome-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #86868b;
+    }
+
+    .welcome-state h2 {
+      font-size: 2rem;
+      font-weight: 600;
+      color: #1d1d1f;
+      margin-bottom: 0.5rem;
+    }
+
+    .welcome-state p {
+      font-size: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    /* Chat Interface */
+    .chat-interface {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-interface.active {
+      display: flex;
+    }
+
+    .chat-header {
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      margin-bottom: 1rem;
+    }
+
+    .chat-header h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1d1d1f;
+    }
+
+    .chat-header p {
+      font-size: 0.85rem;
+      color: #86868b;
+      margin-top: 0.25rem;
+    }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .messages::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .messages::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .messages::-webkit-scrollbar-thumb {
+      background: #c7c7cc;
+      border-radius: 3px;
+    }
+
+    .message {
+      display: flex;
+      gap: 0.75rem;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
       }
-      toggleIndexing(true);
-      try {
-        const fd = new FormData();
-        for (const f of files) fd.append('files', f);
-        const res = await fetch('/upload', { method: 'POST', body: fd });
-        if (!res.ok) throw new Error((await res.json()).detail || 'Upload failed');
-        const data = await res.json();
-        sessionId = data.session_id;
-        localStorage.setItem('mdc_session_id', sessionId);
-        $('#chat').style.display = 'block';
-        toast('Indexing complete. You can chat now.');
-      } catch (e) {
-        console.error(e);
-        toast('Indexing failed. Try re-uploading.');
-      } finally {
-        toggleIndexing(false);
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
     }
 
+    .message.user {
+      flex-direction: row-reverse;
+    }
+
+    .message-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #007aff;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+
+    .message.assistant .message-avatar {
+      background: #34c759;
+    }
+
+    .message-content {
+      max-width: 70%;
+      background: white;
+      padding: 0.875rem 1rem;
+      border-radius: 18px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      word-wrap: break-word;
+    }
+
+    .message.user .message-content {
+      background: #007aff;
+      color: white;
+    }
+
+    /* Composer */
+    .composer {
+      margin-top: 1rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      padding: 0.75rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-end;
+    }
+
+    textarea {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-family: inherit;
+      font-size: 0.9rem;
+      resize: none;
+      min-height: 44px;
+      max-height: 200px;
+      padding: 0.5rem;
+      background: transparent;
+      color: #1d1d1f;
+    }
+
+    textarea::placeholder {
+      color: #86868b;
+    }
+
+    .send-btn {
+      background: #007aff;
+      color: white;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .send-btn:hover:not(:disabled) {
+      background: #0051d5;
+      transform: scale(1.05);
+    }
+
+    .send-btn:disabled {
+      background: #c7c7cc;
+      cursor: not-allowed;
+    }
+
+    /* Spinner */
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Modal for file upload */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-header h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1d1d1f;
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-header p {
+      font-size: 0.85rem;
+      color: #86868b;
+    }
+
+    .dropzone {
+      border: 2px dashed #c7c7cc;
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #f5f5f7;
+    }
+
+    .dropzone:hover, .dropzone.hover {
+      border-color: #007aff;
+      background: rgba(0, 122, 255, 0.05);
+    }
+
+    .dropzone p {
+      margin: 0.5rem 0;
+      font-size: 0.9rem;
+      color: #1d1d1f;
+    }
+
+    .dropzone .hint {
+      font-size: 0.8rem;
+      color: #86868b;
+    }
+
+    .file-list {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: #f5f5f7;
+      border-radius: 8px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .file-list-item {
+      padding: 0.5rem;
+      font-size: 0.85rem;
+      color: #1d1d1f;
+      border-bottom: 1px solid #e5e5e7;
+    }
+
+    .file-list-item:last-child {
+      border-bottom: none;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 0.75rem;
+      border-radius: 10px;
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .modal-btn.primary {
+      background: #007aff;
+      color: white;
+    }
+
+    .modal-btn.primary:hover:not(:disabled) {
+      background: #0051d5;
+    }
+
+    .modal-btn.primary:disabled {
+      background: #c7c7cc;
+      cursor: not-allowed;
+    }
+
+    .modal-btn.secondary {
+      background: #e5e5e7;
+      color: #1d1d1f;
+    }
+
+    .modal-btn.secondary:hover {
+      background: #d1d1d6;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 2000;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>RAG Application</h1>
+  </header>
+
+  <div class="container">
+    <!-- Left Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <button class="upload-btn" id="open-upload-btn">
+          <span>📄</span>
+          <span>Upload Document</span>
+        </button>
+      </div>
+      <div class="document-list" id="document-list">
+        <div class="empty-state">
+          No documents uploaded yet.<br>Click the button above to get started.
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Main Area -->
+    <main class="main-area">
+      <div class="chat-container">
+        <!-- Welcome State -->
+        <div class="welcome-state" id="welcome-state">
+          <h2>Welcome to RAG Application</h2>
+          <p>Upload documents to start chatting with your content</p>
+        </div>
+
+        <!-- Chat Interface -->
+        <div class="chat-interface" id="chat-interface">
+          <div class="chat-header">
+            <h2 id="active-doc-name">Document</h2>
+            <p id="active-doc-type">Chat with your document</p>
+          </div>
+          <div class="messages" id="messages"></div>
+          <div class="composer">
+            <textarea 
+              id="message-input" 
+              placeholder="Ask me anything about this document..." 
+              rows="1"></textarea>
+            <button class="send-btn" id="send-btn">
+              <span id="send-icon">↑</span>
+              <div class="spinner" id="send-spinner" style="display: none;"></div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Upload Modal -->
+  <div class="modal" id="upload-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Upload Documents</h2>
+        <p>Choose one or more files to upload</p>
+      </div>
+      <div class="dropzone" id="dropzone">
+        <p>📁 Drag and drop files here</p>
+        <p class="hint">or</p>
+        <label class="upload-btn" style="display: inline-flex; margin-top: 0.5rem;">
+          Choose Files
+          <input id="file-input" type="file" multiple />
+        </label>
+      </div>
+      <div class="file-list" id="file-list" style="display: none;"></div>
+      <div class="modal-actions">
+        <button class="modal-btn secondary" id="cancel-upload-btn">Cancel</button>
+        <button class="modal-btn primary" id="confirm-upload-btn" disabled>Upload & Index</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => document.querySelectorAll(sel);
+
+    // State management
+    let documents = JSON.parse(localStorage.getItem('rag_documents') || '[]');
+    let activeDocId = localStorage.getItem('rag_active_doc') || null;
+    let selectedFiles = null;
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+      renderDocumentList();
+      if (activeDocId) {
+        setActiveDocument(activeDocId);
+      }
+      setupEventListeners();
+    });
+
+    function setupEventListeners() {
+      // Upload button
+      $('#open-upload-btn').addEventListener('click', openUploadModal);
+      $('#cancel-upload-btn').addEventListener('click', closeUploadModal);
+      $('#confirm-upload-btn').addEventListener('click', uploadFiles);
+      
+      // File input
+      $('#file-input').addEventListener('change', handleFileSelect);
+      
+      // Drag and drop
+      const dropzone = $('#dropzone');
+      dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.classList.add('hover');
+      });
+      dropzone.addEventListener('dragleave', () => dropzone.classList.remove('hover'));
+      dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('hover');
+        $('#file-input').files = e.dataTransfer.files;
+        handleFileSelect();
+      });
+
+      // Send message
+      $('#send-btn').addEventListener('click', sendMessage);
+      $('#message-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      // Auto-resize textarea
+      $('#message-input').addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+      });
+    }
+
+    // Modal functions
+    function openUploadModal() {
+      $('#upload-modal').classList.add('active');
+    }
+
+    function closeUploadModal() {
+      $('#upload-modal').classList.remove('active');
+      $('#file-input').value = '';
+      $('#file-list').style.display = 'none';
+      $('#file-list').innerHTML = '';
+      $('#confirm-upload-btn').disabled = true;
+      selectedFiles = null;
+    }
+
+    function handleFileSelect() {
+      const files = $('#file-input').files;
+      if (files.length === 0) {
+        $('#file-list').style.display = 'none';
+        $('#confirm-upload-btn').disabled = true;
+        return;
+      }
+
+      selectedFiles = files;
+      const fileList = $('#file-list');
+      fileList.innerHTML = '';
+      
+      Array.from(files).forEach(file => {
+        const item = document.createElement('div');
+        item.className = 'file-list-item';
+        item.textContent = `${file.name} (${formatFileSize(file.size)})`;
+        fileList.appendChild(item);
+      });
+      
+      fileList.style.display = 'block';
+      $('#confirm-upload-btn').disabled = false;
+    }
+
+    async function uploadFiles() {
+      if (!selectedFiles || selectedFiles.length === 0) return;
+
+      const btn = $('#confirm-upload-btn');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner"></div> Uploading...';
+
+      try {
+        const fd = new FormData();
+        const fileNames = [];
+        
+        for (const file of selectedFiles) {
+          fd.append('files', file);
+          fileNames.push({
+            name: file.name,
+            type: file.name.split('.').pop().toLowerCase()
+          });
+        }
+
+        const res = await fetch('/upload', { method: 'POST', body: fd });
+        if (!res.ok) throw new Error((await res.json()).detail || 'Upload failed');
+        
+        const data = await res.json();
+        const sessionId = data.session_id;
+
+        // Store document info
+        const newDoc = {
+          id: sessionId,
+          name: fileNames.map(f => f.name).join(', '),
+          type: fileNames.map(f => f.type).join(', '),
+          files: fileNames,
+          messages: []
+        };
+
+        documents.push(newDoc);
+        localStorage.setItem('rag_documents', JSON.stringify(documents));
+
+        // Set as active and render
+        activeDocId = sessionId;
+        localStorage.setItem('rag_active_doc', activeDocId);
+        
+        renderDocumentList();
+        setActiveDocument(activeDocId);
+        closeUploadModal();
+        
+        toast('Documents uploaded successfully!');
+      } catch (e) {
+        console.error(e);
+        toast('Upload failed. Please try again.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    }
+
+    // Document list functions
+    function renderDocumentList() {
+      const list = $('#document-list');
+      
+      if (documents.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            No documents uploaded yet.<br>Click the button above to get started.
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = documents.map(doc => `
+        <div class="document-item ${doc.id === activeDocId ? 'active' : ''}" 
+             data-doc-id="${doc.id}">
+          <div class="doc-name">${doc.name}</div>
+          <div class="doc-type">${doc.type}</div>
+        </div>
+      `).join('');
+
+      // Add click handlers
+      $$('.document-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const docId = item.dataset.docId;
+          setActiveDocument(docId);
+        });
+      });
+    }
+
+    function setActiveDocument(docId) {
+      activeDocId = docId;
+      localStorage.setItem('rag_active_doc', activeDocId);
+      
+      const doc = documents.find(d => d.id === docId);
+      if (!doc) return;
+
+      // Update UI
+      $('#welcome-state').style.display = 'none';
+      $('#chat-interface').classList.add('active');
+      
+      $('#active-doc-name').textContent = doc.name;
+      $('#active-doc-type').textContent = `${doc.type.toUpperCase()} • Chat with your document`;
+      
+      // Render messages
+      renderMessages(doc.messages);
+      
+      // Update sidebar
+      renderDocumentList();
+    }
+
+    function renderMessages(messages) {
+      const container = $('#messages');
+      container.innerHTML = messages.map(msg => `
+        <div class="message ${msg.role}">
+          <div class="message-avatar">${msg.role === 'user' ? 'U' : 'A'}</div>
+          <div class="message-content">${escapeHtml(msg.content)}</div>
+        </div>
+      `).join('');
+      
+      container.scrollTop = container.scrollHeight;
+    }
+
     async function sendMessage() {
+      if (!activeDocId) {
+        toast('Please select a document first');
+        return;
+      }
+
       const input = $('#message-input');
       const text = input.value.trim();
-      if (!sessionId) { toast('Please upload documents first.'); return; }
-      if (!text) { return; }
-      appendMessage('user', text);
+      
+      if (!text) return;
+
+      const doc = documents.find(d => d.id === activeDocId);
+      if (!doc) return;
+
+      // Add user message
+      doc.messages.push({ role: 'user', content: text });
+      renderMessages(doc.messages);
+      
       input.value = '';
-      toggleThinking(true);
+      input.style.height = 'auto';
+
+      // Update UI
+      const sendBtn = $('#send-btn');
+      const sendIcon = $('#send-icon');
+      const sendSpinner = $('#send-spinner');
+      
+      sendBtn.disabled = true;
+      sendIcon.style.display = 'none';
+      sendSpinner.style.display = 'block';
+
       try {
         const res = await fetch('/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ session_id: sessionId, message: text })
+          body: JSON.stringify({ 
+            session_id: activeDocId, 
+            message: text 
+          })
         });
+
         if (!res.ok) throw new Error((await res.json()).detail || 'Chat failed');
+        
         const data = await res.json();
-        appendMessage('assistant', data.answer);
+        
+        // Add assistant message
+        doc.messages.push({ role: 'assistant', content: data.answer });
+        
+        // Save to localStorage
+        localStorage.setItem('rag_documents', JSON.stringify(documents));
+        
+        renderMessages(doc.messages);
       } catch (e) {
         console.error(e);
-        toast('Thinking failed. Try again.');
+        toast('Failed to get response. Please try again.');
+        doc.messages.pop(); // Remove user message on error
+        renderMessages(doc.messages);
       } finally {
-        toggleThinking(false);
+        sendBtn.disabled = false;
+        sendIcon.style.display = 'block';
+        sendSpinner.style.display = 'none';
       }
     }
 
-    function appendMessage(role, text) {
-      const container = $('#messages');
-      const bubble = document.createElement('div');
-      bubble.className = 'bubble ' + (role === 'user' ? 'user' : 'assistant');
-      bubble.textContent = text;
-      container.appendChild(bubble);
-      container.scrollTop = container.scrollHeight;
+    // Utility functions
+    function formatFileSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     }
 
-    function toggleIndexing(on) {
-      $('#upload-btn').disabled = on;
-      $('#indexing').style.display = on ? 'inline-block' : 'none';
-    }
-
-    function toggleThinking(on) {
-      $('#send-btn').disabled = on;
-      $('#thinking').style.display = on ? 'inline-block' : 'none';
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
     }
 
     function toast(msg) {
       const el = $('#toast');
       el.textContent = msg;
       el.style.opacity = '1';
-      setTimeout(() => el.style.opacity = '0', 2500);
+      setTimeout(() => el.style.opacity = '0', 3000);
     }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      if (sessionId) {
-        $('#chat').style.display = 'block';
-      }
-      $('#upload-form').addEventListener('submit', uploadFiles);
-      $('#send-btn').addEventListener('click', sendMessage);
-      $('#message-input').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-      });
-      const drop = $('#dropzone');
-      drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('hover'); });
-      drop.addEventListener('dragleave', () => drop.classList.remove('hover'));
-      drop.addEventListener('drop', (e) => {
-        e.preventDefault();
-        drop.classList.remove('hover');
-        $('#file-input').files = e.dataTransfer.files;
-      });
-    });
   </script>
-  <meta name="color-scheme" content="light dark" />
-</head>
-<body>
-  <header>
-    <h1>MultiDocChat</h1>
-  </header>
-
-  <main>
-    <section id="uploader">
-      <form id="upload-form">
-        <div id="dropzone">
-          <p>Drag and drop files here</p>
-          <p>or</p>
-          <label class="btn">
-            Choose files
-            <input id="file-input" type="file" name="files" multiple hidden />
-          </label>
-        </div>
-        <button id="upload-btn" style="background-color: rgb(0, 94, 225); color: white; border-radius: 6px; cursor: pointer;" type="submit">Upload & Index</button>
-        <span id="indexing" class="hint" style="display:none;">Indexing…</span>
-      </form>
-    </section>
-
-    <section id="chat" style="display:none;">
-      <div id="messages" class="messages"></div>
-      <div class="composer">
-        <textarea id="message-input" rows="2" placeholder="Ask about your documents…"></textarea>
-        <button id="send-btn" style="background-color: rgb(0, 94, 225); color: white; border-radius: 6px; cursor: pointer;">Send</button>
-        <span id="thinking" class="hint" style="display:none;">Thinking…</span>
-      </div>
-    </section>
-  </main>
-
-  <div id="toast" class="toast"></div>
 </body>
 </html>

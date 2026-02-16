@@ -18,14 +18,6 @@ from pydantic import ValidationError
 
 
 class ConversationalRAG:
-    """
-    LCEL-based Conversational RAG with lazy retriever initialization.
-
-    Usage:
-        rag = ConversationalRAG(session_id="abc")
-        rag.load_retriever_from_faiss(index_path="faiss_index/abc", k=5, index_name="index")
-        answer = rag.invoke("What is ...?", chat_history=[])
-    """
 
     def __init__(self, session_id: Optional[str], retriever=None):
         try:

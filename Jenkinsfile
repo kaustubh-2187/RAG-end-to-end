@@ -68,7 +68,10 @@ pipeline {
                       --memory=2Gi \
                       --cpu=2 \
                       --timeout=300 \
-                      --set-env-vars="GROQ_API_KEY=${GROQ_KEY},GOOGLE_API_KEY=${GOOGLE_KEY},HF_TOKEN=${HF_TOKEN},ENV=production"
+                      --execution-environment=gen2 \
+                      --add-volume name=gcs-data,type=cloud-storage,bucket=rag-app-storage-${GCP_PROJECT} \
+                      --add-volume-mount volume=gcs-data,mount-path=/gcs-data \
+                      --set-env-vars="GROQ_API_KEY=${GROQ_KEY},GOOGLE_API_KEY=${GOOGLE_KEY},HF_TOKEN=${HF_TOKEN},ENV=production,DATA_DIR=/gcs-data/data,FAISS_DIR=/gcs-data/faiss_index"
                     '''
                 }
             }

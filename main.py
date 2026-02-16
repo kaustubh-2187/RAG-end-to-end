@@ -35,6 +35,10 @@ templates_dir = BASE_DIR / "templates"
 app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 templates = Jinja2Templates(directory=str(templates_dir))
 
+# Storage directories (use env vars for GCS mount)
+DATA_DIR = os.getenv("DATA_DIR", "data")
+FAISS_DIR = os.getenv("FAISS_DIR", "faiss_index")
+
 SESSIONS: Dict[str, List[dict]] = {}
 
 @app.get('/health')
@@ -54,7 +58,11 @@ async def upload(files: List[UploadFile] = File(...)) -> UploadResponse:
         # Wrap FastAPI files to preserve filename/text and provide a read buffer
         wrapped_files = [FastAPIFileAdapter(f) for f in files]
 
-        ingestor = ChatIngestor(use_session_dirs=True)
+        ingestor = ChatIngestor(
+            use_session_dirs=True,
+            temp_base=DATA_DIR,
+            faiss_base=FAISS_DIR
+        )
         session_id = ingestor.session_id
 
         # Save, load, split, embed and write FAISS index
@@ -81,7 +89,7 @@ async def chat(req: ChatRequest) -> ChatResponse:
     try:
         # Build RAG and load retriever from persisted FAISS
         rag = ConversationalRAG(session_id=session_id)
-        index_path = f"faiss_index/{session_id}"
+        index_path = f"{FAISS_DIR}/{session_id}"
         rag.load_retriever_from_faiss(index_path=index_path)
 
         # Use simple in-memory history and convert to BaseMessage List

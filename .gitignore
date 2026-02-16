@@ -1,17 +1,59 @@
-# Python-generated files
+# Environment and secrets
 .env
+.env.*
+*.key
+*.pem
+gen-lang-client-*.json
+secrets/
+
+# Python-generated files
 __pycache__/
 *.py[oc]
+*.pyd
+.Python
 build/
 dist/
 wheels/
-*.egg-info
-gen-lang-client-0068855436-6ac47f371465.json
+*.egg-info/
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
 
 # Virtual environments
-.venv
-logs/
-faiss_index/
+venv/
+.venv/
+env/
+ENV/
+
+# DVC-tracked data (actual data, not .dvc files)
 data/
+faiss_index/
 /data
 /faiss_index
+
+# Logs and temp files
+logs/
+*.log
+tmp/
+temp/
+
+# IDE and OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb
+
+# mypy
+.mypy_cache/
+.dmypy.json
+
+# Documentation builds
+docs/_build/

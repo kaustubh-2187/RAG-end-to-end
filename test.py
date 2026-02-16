@@ -11,7 +11,7 @@ load_dotenv()
 def test_document_ingestion_and_rag():
     try:
         test_files = [
-            r"C:\Users\kaust\Python\Projects\RAG\data\NIPS-2017-attention-is-all-you-need-Paper.pdf"
+            r"C:\Users\kaust\Python\Projects\RAG\data\session_20260206_181129_f62863ab\dc66448f.txt"
         ]
 
         uploaded_files = []

@@ -63,6 +63,18 @@ class ChatIngestor:
     def _split(self, docs: List[Document], chunk_size=1000, chunk_overlap=200) -> List[Document]:
         splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         chunks = splitter.split_documents(docs)
+        
+        # Add chunk_id to metadata for evaluation
+        for chunk in chunks:
+            source = chunk.metadata.get('source', 'unknown')
+            source_stem = Path(source).stem if source != 'unknown' else 'unknown'
+            
+            # Count existing chunks from same source
+            existing_count = sum(1 for c in chunks[:chunks.index(chunk)] 
+                               if Path(c.metadata.get('source', '')).stem == source_stem)
+            
+            chunk.metadata['chunk_id'] = f"{source_stem}_chunk{existing_count}"
+        
         log.info("Documents split", chunks=len(chunks), chunk_size=chunk_size, overlap=chunk_overlap)
         return chunks
 

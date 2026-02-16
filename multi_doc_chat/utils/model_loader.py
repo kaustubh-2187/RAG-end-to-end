@@ -113,14 +113,6 @@ class ModelLoader:
                 temperature=temperature,
             )
 
-        # elif provider == "openai":
-        #     return ChatOpenAI(
-        #         model=model_name,
-        #         api_key=self.api_key_mgr.get("OPENAI_API_KEY"),
-        #         temperature=temperature,
-        #         max_tokens=max_tokens
-        #     )
-
         else:
             log.error("Unsupported LLM provider", provider=provider)
             raise ValueError(f"Unsupported LLM provider: {provider}")
