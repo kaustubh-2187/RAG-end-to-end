@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 from pathlib import Path
 from typing import Dict, List
 
@@ -11,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
+from multi_doc_chat.utils.config_loader import load_config
 from multi_doc_chat.model.models import UploadResponse, ChatResponse, ChatRequest, ChatAnswer
 from multi_doc_chat.utils.document_ops import FastAPIFileAdapter
 from multi_doc_chat.src.document_ingestion.data_ingestion import ChatIngestor
@@ -40,6 +42,7 @@ DATA_DIR = os.getenv("DATA_DIR", "data")
 FAISS_DIR = os.getenv("FAISS_DIR", "faiss_index")
 
 SESSIONS: Dict[str, List[dict]] = {}
+CURRENT_PROVIDER: str = "google"  # Runtime LLM provider — changed via /model/set
 
 @app.get('/health')
 def health() -> Dict[str, str]:
@@ -88,7 +91,8 @@ async def chat(req: ChatRequest) -> ChatResponse:
     
     try:
         # Build RAG and load retriever from persisted FAISS
-        rag = ConversationalRAG(session_id=session_id)
+        # Pass CURRENT_PROVIDER so ModelLoader uses it instead of reading from YAML
+        rag = ConversationalRAG(session_id=session_id, provider_override=CURRENT_PROVIDER)
         index_path = f"{FAISS_DIR}/{session_id}"
         rag.load_retriever_from_faiss(index_path=index_path)
 
@@ -115,6 +119,62 @@ async def chat(req: ChatRequest) -> ChatResponse:
         raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Chat failed : {e}")
+    
+@app.delete("/delete/{session_id}")
+async def delete_document(session_id: str):
+    """Delete document and all associated data"""
+    if not session_id:
+        raise HTTPException(status_code=400, detail="session_id is required")
+    
+    try:
+        if session_id in SESSIONS:
+            del SESSIONS[session_id]
+        
+        faiss_path = Path(FAISS_DIR) / session_id
+        if faiss_path.exists():
+            shutil.rmtree(faiss_path)
+        
+        data_path = Path(DATA_DIR) / session_id
+        if data_path.exists():
+            shutil.rmtree(data_path)
+        
+        return {"success": True, "message":"Document deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Delete Failed : {e}")
+
+@app.get("/model")
+async def get_model():
+    """Get current LLM provider and model name"""
+    config = load_config()
+    provider = CURRENT_PROVIDER
+    model_config = config["llm"][provider]
+    return {
+        "provider" : provider,
+        "model_name" : model_config["model_name"]
+    }
+
+@app.post("/model/set")
+async def set_model(request: Request):
+    """Set the LLM provider (groq or google)"""
+    global CURRENT_PROVIDER
+    data = await request.json()
+    provider = data.get("provider")
+
+    if provider not in ["groq", "google"]:
+        raise HTTPException(status_code=400, detail="Invalid provider. Must be 'groq' or 'google'")
+    
+    CURRENT_PROVIDER = provider
+
+    config = load_config()
+    config["llm"]["provider"] = provider
+    
+    model_name = config["llm"][provider]["model_name"]
+
+    return {
+        'success' : True,
+        "provider" : provider,
+        "model_name" : model_name
+    }
 
 if __name__=="__main__":
     import uvicorn

@@ -19,7 +19,6 @@ class ApiKeyManager:
 
     def __init__(self):
         self.api_keys = {}
-        raw = os.getenv("apikeyliveclass")
 
         for key in self.REQUIRED_KEYS:
             if not self.api_keys.get(key):
@@ -79,12 +78,13 @@ class ModelLoader:
             log.error("Error loading embedding model", error=str(e))
             raise DocumentPortalException("Failed to load embedding model", sys)
 
-    def load_llm(self):
+    def load_llm(self, provider_override: str = None):
         """
         Load and return the configured LLM model.
+        Accepts an optional provider_override to bypass the YAML config value.
         """
         llm_block = self.config["llm"]
-        provider = llm_block.get("provider", "groq")
+        provider = provider_override or llm_block.get("provider", "groq")
 
         # if provider_key not in llm_block:
         #     log.error("LLM provider not found in config", provider=provider_key)

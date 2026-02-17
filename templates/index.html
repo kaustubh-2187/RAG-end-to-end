@@ -30,6 +30,9 @@
       left: 0;
       right: 0;
       z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
     header h1 {
@@ -37,6 +40,113 @@
       font-weight: 600;
       color: #1d1d1f;
       letter-spacing: -0.5px;
+    }
+
+    /* Model selector in header */
+    .model-selector-wrap {
+      position: relative;
+    }
+
+    .model-selector-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #f5f5f7;
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 20px;
+      padding: 0.4rem 0.9rem;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: #1d1d1f;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .model-selector-btn:hover {
+      background: #e8e8ed;
+    }
+
+    .model-selector-btn .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #34c759;
+      flex-shrink: 0;
+    }
+
+    .model-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: white;
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+      overflow: hidden;
+      min-width: 200px;
+      z-index: 200;
+    }
+
+    .model-dropdown.open {
+      display: block;
+    }
+
+    .model-dropdown-header {
+      padding: 0.6rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #86868b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .model-option {
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .model-option:hover {
+      background: #f5f5f7;
+    }
+
+    .model-option.selected {
+      background: rgba(0,122,255,0.06);
+    }
+
+    .model-option-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .model-option-provider {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #1d1d1f;
+      text-transform: capitalize;
+    }
+
+    .model-option-name {
+      font-size: 0.75rem;
+      color: #86868b;
+      margin-top: 1px;
+    }
+
+    .model-option-check {
+      color: #007aff;
+      font-size: 1rem;
+      font-weight: 600;
+      opacity: 0;
+    }
+
+    .model-option.selected .model-option-check {
+      opacity: 1;
     }
 
     /* Main Container */
@@ -112,10 +222,13 @@
       background: #f5f5f7;
       border: 1px solid transparent;
       border-radius: 8px;
-      padding: 0.75rem;
+      padding: 0.75rem 0.6rem 0.75rem 0.75rem;
       margin-bottom: 0.5rem;
       cursor: pointer;
       transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
     }
 
     .document-item:hover {
@@ -126,6 +239,11 @@
       background: #007aff;
       color: white;
       border-color: #007aff;
+    }
+
+    .doc-info {
+      flex: 1;
+      min-width: 0;
     }
 
     .doc-name {
@@ -140,6 +258,44 @@
       opacity: 0.7;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+    }
+
+    /* Delete button on document items */
+    .doc-delete-btn {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: #86868b;
+      font-size: 1rem;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: all 0.15s ease;
+    }
+
+    .document-item:hover .doc-delete-btn {
+      opacity: 1;
+    }
+
+    .document-item.active .doc-delete-btn {
+      color: rgba(255,255,255,0.7);
+      opacity: 1;
+    }
+
+    .doc-delete-btn:hover {
+      background: rgba(255, 59, 48, 0.15) !important;
+      color: #ff3b30 !important;
+    }
+
+    .document-item.active .doc-delete-btn:hover {
+      background: rgba(255,255,255,0.2) !important;
+      color: white !important;
     }
 
     .empty-state {
@@ -166,6 +322,7 @@
       width: 100%;
       margin: 0 auto;
       padding: 2rem;
+      height: 100%;
     }
 
     /* Welcome State */
@@ -197,6 +354,7 @@
       flex: 1;
       flex-direction: column;
       overflow: hidden;
+      height: 0;
     }
 
     .chat-interface.active {
@@ -209,16 +367,51 @@
       margin-bottom: 1rem;
     }
 
+    .chat-header-top {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
     .chat-header h2 {
       font-size: 1.25rem;
       font-weight: 600;
       color: #1d1d1f;
     }
 
+    .chat-header-sep {
+      color: #c7c7cc;
+      font-weight: 300;
+      font-size: 1.1rem;
+    }
+
+    /* Active model badge in chat header */
+    .active-model-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: linear-gradient(135deg, #007aff15, #5856d615);
+      border: 1px solid #007aff40;
+      border-radius: 20px;
+      padding: 0.25rem 0.7rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #007aff;
+      letter-spacing: 0.2px;
+    }
+
+    .active-model-badge .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #007aff;
+    }
+
     .chat-header p {
       font-size: 0.85rem;
       color: #86868b;
-      margin-top: 0.25rem;
+      margin-top: 0.35rem;
     }
 
     .messages {
@@ -250,14 +443,8 @@
     }
 
     @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
     .message.user {
@@ -298,6 +485,35 @@
       color: white;
     }
 
+    /* Thinking bubble */
+    .thinking-bubble .message-content {
+      padding: 0.875rem 1.25rem;
+    }
+
+    .thinking-dots {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .thinking-dots span {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #c7c7cc;
+      display: inline-block;
+      animation: thinkingBounce 1.2s ease-in-out infinite;
+    }
+
+    .thinking-dots span:nth-child(1) { animation-delay: 0s; }
+    .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes thinkingBounce {
+      0%, 60%, 100% { transform: translateY(0);   background: #c7c7cc; }
+      30%            { transform: translateY(-6px); background: #86868b; }
+    }
+
     /* Composer */
     .composer {
       margin-top: 1rem;
@@ -308,6 +524,7 @@
       display: flex;
       gap: 0.75rem;
       align-items: flex-end;
+      flex-shrink: 0;
     }
 
     textarea {
@@ -324,9 +541,7 @@
       color: #1d1d1f;
     }
 
-    textarea::placeholder {
-      color: #86868b;
-    }
+    textarea::placeholder { color: #86868b; }
 
     .send-btn {
       background: #007aff;
@@ -353,7 +568,7 @@
       cursor: not-allowed;
     }
 
-    /* Spinner */
+    /* Spinner (send button) */
     .spinner {
       width: 16px;
       height: 16px;
@@ -363,18 +578,13 @@
       animation: spin 0.8s linear infinite;
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Modal for file upload */
+    /* Upload Modal */
     .modal {
       display: none;
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0, 0, 0, 0.5);
       backdrop-filter: blur(10px);
       z-index: 1000;
@@ -382,9 +592,7 @@
       justify-content: center;
     }
 
-    .modal.active {
-      display: flex;
-    }
+    .modal.active { display: flex; }
 
     .modal-content {
       background: white;
@@ -395,9 +603,7 @@
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     }
 
-    .modal-header {
-      margin-bottom: 1.5rem;
-    }
+    .modal-header { margin-bottom: 1.5rem; }
 
     .modal-header h2 {
       font-size: 1.25rem;
@@ -406,10 +612,7 @@
       margin-bottom: 0.5rem;
     }
 
-    .modal-header p {
-      font-size: 0.85rem;
-      color: #86868b;
-    }
+    .modal-header p { font-size: 0.85rem; color: #86868b; }
 
     .dropzone {
       border: 2px dashed #c7c7cc;
@@ -426,16 +629,8 @@
       background: rgba(0, 122, 255, 0.05);
     }
 
-    .dropzone p {
-      margin: 0.5rem 0;
-      font-size: 0.9rem;
-      color: #1d1d1f;
-    }
-
-    .dropzone .hint {
-      font-size: 0.8rem;
-      color: #86868b;
-    }
+    .dropzone p { margin: 0.5rem 0; font-size: 0.9rem; color: #1d1d1f; }
+    .dropzone .hint { font-size: 0.8rem; color: #86868b; }
 
     .file-list {
       margin-top: 1rem;
@@ -453,9 +648,7 @@
       border-bottom: 1px solid #e5e5e7;
     }
 
-    .file-list-item:last-child {
-      border-bottom: none;
-    }
+    .file-list-item:last-child { border-bottom: none; }
 
     .modal-actions {
       display: flex;
@@ -474,27 +667,60 @@
       transition: all 0.2s ease;
     }
 
-    .modal-btn.primary {
-      background: #007aff;
-      color: white;
+    .modal-btn.primary { background: #007aff; color: white; }
+    .modal-btn.primary:hover:not(:disabled) { background: #0051d5; }
+    .modal-btn.primary:disabled { background: #c7c7cc; cursor: not-allowed; }
+    .modal-btn.secondary { background: #e5e5e7; color: #1d1d1f; }
+    .modal-btn.secondary:hover { background: #d1d1d6; }
+    .modal-btn.danger { background: #ff3b30; color: white; }
+    .modal-btn.danger:hover { background: #d93025; }
+
+    /* Confirm delete dialog */
+    .confirm-dialog {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(10px);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
     }
 
-    .modal-btn.primary:hover:not(:disabled) {
-      background: #0051d5;
+    .confirm-dialog.active { display: flex; }
+
+    .confirm-dialog-box {
+      background: white;
+      border-radius: 16px;
+      padding: 1.75rem;
+      max-width: 380px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      text-align: center;
     }
 
-    .modal-btn.primary:disabled {
-      background: #c7c7cc;
-      cursor: not-allowed;
+    .confirm-dialog-icon {
+      font-size: 2.2rem;
+      margin-bottom: 0.75rem;
     }
 
-    .modal-btn.secondary {
-      background: #e5e5e7;
+    .confirm-dialog-box h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
       color: #1d1d1f;
+      margin-bottom: 0.5rem;
     }
 
-    .modal-btn.secondary:hover {
-      background: #d1d1d6;
+    .confirm-dialog-box p {
+      font-size: 0.85rem;
+      color: #86868b;
+      line-height: 1.5;
+      margin-bottom: 1.25rem;
+    }
+
+    .confirm-dialog-actions {
+      display: flex;
+      gap: 0.75rem;
     }
 
     /* Toast */
@@ -510,17 +736,41 @@
       font-size: 0.85rem;
       opacity: 0;
       transition: opacity 0.3s ease;
-      z-index: 2000;
+      z-index: 3000;
+      white-space: nowrap;
     }
 
-    input[type="file"] {
-      display: none;
-    }
+    input[type="file"] { display: none; }
   </style>
 </head>
 <body>
   <header>
     <h1>RAG Application</h1>
+    <!-- Model Selector -->
+    <div class="model-selector-wrap" id="model-selector-wrap">
+      <button class="model-selector-btn" id="model-selector-btn">
+        <span class="dot"></span>
+        <span id="model-btn-label">Loading...</span>
+        <span>▾</span>
+      </button>
+      <div class="model-dropdown" id="model-dropdown">
+        <div class="model-dropdown-header">Select Provider</div>
+        <div class="model-option" data-provider="google" id="opt-google">
+          <div class="model-option-info">
+            <span class="model-option-provider">Google</span>
+            <span class="model-option-name" id="opt-google-model">—</span>
+          </div>
+          <span class="model-option-check">✓</span>
+        </div>
+        <div class="model-option" data-provider="groq" id="opt-groq">
+          <div class="model-option-info">
+            <span class="model-option-provider">Groq</span>
+            <span class="model-option-name" id="opt-groq-model">—</span>
+          </div>
+          <span class="model-option-check">✓</span>
+        </div>
+      </div>
+    </div>
   </header>
 
   <div class="container">
@@ -551,14 +801,21 @@
         <!-- Chat Interface -->
         <div class="chat-interface" id="chat-interface">
           <div class="chat-header">
-            <h2 id="active-doc-name">Document</h2>
+            <div class="chat-header-top">
+              <h2 id="active-doc-name">Document</h2>
+              <span class="chat-header-sep">|</span>
+              <span class="active-model-badge" id="active-model-badge">
+                <span class="badge-dot"></span>
+                <span id="active-model-label">—</span>
+              </span>
+            </div>
             <p id="active-doc-type">Chat with your document</p>
           </div>
           <div class="messages" id="messages"></div>
           <div class="composer">
-            <textarea 
-              id="message-input" 
-              placeholder="Ask me anything about this document..." 
+            <textarea
+              id="message-input"
+              placeholder="Ask me anything about this document..."
               rows="1"></textarea>
             <button class="send-btn" id="send-btn">
               <span id="send-icon">↑</span>
@@ -593,41 +850,142 @@
     </div>
   </div>
 
+  <!-- Confirm Delete Dialog -->
+  <div class="confirm-dialog" id="confirm-dialog">
+    <div class="confirm-dialog-box">
+      <div class="confirm-dialog-icon">🗑️</div>
+      <h3>Delete Document?</h3>
+      <p id="confirm-dialog-msg">This will permanently delete the document and all its chat history from the backend.</p>
+      <div class="confirm-dialog-actions">
+        <button class="modal-btn secondary" id="confirm-cancel-btn">Cancel</button>
+        <button class="modal-btn danger" id="confirm-delete-btn">Delete</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script>
-    const $ = (sel) => document.querySelector(sel);
+    const $  = (sel) => document.querySelector(sel);
     const $$ = (sel) => document.querySelectorAll(sel);
 
-    // State management
-    let documents = JSON.parse(localStorage.getItem('rag_documents') || '[]');
+    // ── State ──────────────────────────────────────────────────────────────────
+    let documents   = JSON.parse(localStorage.getItem('rag_documents') || '[]');
     let activeDocId = localStorage.getItem('rag_active_doc') || null;
     let selectedFiles = null;
+    let currentProvider  = 'google';   // mirrors backend CURRENT_PROVIDER
+    let currentModelName = '';         // display name only
+    let modelConfig = {};              // { google: 'gemini-...', groq: 'llama-...' }
+    let pendingDeleteId = null;        // doc id waiting for delete confirmation
 
-    // Initialize
-    window.addEventListener('DOMContentLoaded', () => {
+    // ── Boot ───────────────────────────────────────────────────────────────────
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadModelConfig();
       renderDocumentList();
-      if (activeDocId) {
+      if (activeDocId && documents.find(d => d.id === activeDocId)) {
         setActiveDocument(activeDocId);
       }
       setupEventListeners();
     });
 
+    // ── Model helpers ──────────────────────────────────────────────────────────
+    async function loadModelConfig() {
+      // Fetch current provider from backend and build model name map from config
+      try {
+        // /model tells us the active provider + its model name
+        const res = await fetch('/model');
+        const data = await res.json();
+        currentProvider  = data.provider;
+        currentModelName = data.model_name;
+
+        // Also pre-fetch the other provider's model name by reading config indirectly:
+        // We request each provider option to populate the dropdown labels.
+        // We do this by temporarily asking backend for each — but that mutates state.
+        // Instead, we derive model names from a second GET that returns full config.
+        // Since we don't have a /config endpoint, we populate the current provider
+        // correctly and leave the other as a placeholder until it becomes active.
+        modelConfig[currentProvider] = currentModelName;
+
+        updateModelUI();
+      } catch (e) {
+        console.error('Failed to load model config', e);
+      }
+    }
+
+    function updateModelUI() {
+      // Header button label
+      $('#model-btn-label').textContent = currentModelName || currentProvider;
+
+      // Badge in chat header
+      $('#active-model-label').textContent = currentModelName || currentProvider;
+
+      // Dropdown: mark selected, populate known model names
+      $$('.model-option').forEach(opt => {
+        const p = opt.dataset.provider;
+        opt.classList.toggle('selected', p === currentProvider);
+        if (modelConfig[p]) {
+          opt.querySelector('.model-option-name').textContent = modelConfig[p];
+        }
+      });
+    }
+
+    async function selectProvider(provider) {
+      if (provider === currentProvider) {
+        closeModelDropdown();
+        return;
+      }
+      try {
+        const res = await fetch('/model/set', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ provider })
+        });
+        if (!res.ok) throw new Error('Failed to set model');
+        const data = await res.json();
+        currentProvider  = data.provider;
+        currentModelName = data.model_name;
+        modelConfig[currentProvider] = currentModelName;
+        updateModelUI();
+        toast(`Switched to ${data.provider} · ${data.model_name}`);
+      } catch (e) {
+        console.error(e);
+        toast('Failed to switch model. Please try again.');
+      } finally {
+        closeModelDropdown();
+      }
+    }
+
+    function openModelDropdown()  { $('#model-dropdown').classList.add('open'); }
+    function closeModelDropdown() { $('#model-dropdown').classList.remove('open'); }
+
+    // ── Event listeners ────────────────────────────────────────────────────────
     function setupEventListeners() {
-      // Upload button
+      // Model selector
+      $('#model-selector-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        $('#model-dropdown').classList.toggle('open');
+      });
+
+      $$('.model-option').forEach(opt => {
+        opt.addEventListener('click', () => selectProvider(opt.dataset.provider));
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!$('#model-selector-wrap').contains(e.target)) {
+          closeModelDropdown();
+        }
+      });
+
+      // Upload
       $('#open-upload-btn').addEventListener('click', openUploadModal);
       $('#cancel-upload-btn').addEventListener('click', closeUploadModal);
       $('#confirm-upload-btn').addEventListener('click', uploadFiles);
-      
-      // File input
       $('#file-input').addEventListener('change', handleFileSelect);
-      
+
       // Drag and drop
       const dropzone = $('#dropzone');
-      dropzone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropzone.classList.add('hover');
-      });
+      dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('hover'); });
       dropzone.addEventListener('dragleave', () => dropzone.classList.remove('hover'));
       dropzone.addEventListener('drop', (e) => {
         e.preventDefault();
@@ -636,27 +994,25 @@
         handleFileSelect();
       });
 
+      // Confirm delete dialog
+      $('#confirm-cancel-btn').addEventListener('click', closeConfirmDialog);
+      $('#confirm-delete-btn').addEventListener('click', executeDelete);
+
       // Send message
       $('#send-btn').addEventListener('click', sendMessage);
       $('#message-input').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          sendMessage();
-        }
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
       });
 
       // Auto-resize textarea
-      $('#message-input').addEventListener('input', function() {
+      $('#message-input').addEventListener('input', function () {
         this.style.height = 'auto';
         this.style.height = Math.min(this.scrollHeight, 200) + 'px';
       });
     }
 
-    // Modal functions
-    function openUploadModal() {
-      $('#upload-modal').classList.add('active');
-    }
-
+    // ── Upload ─────────────────────────────────────────────────────────────────
+    function openUploadModal()  { $('#upload-modal').classList.add('active'); }
     function closeUploadModal() {
       $('#upload-modal').classList.remove('active');
       $('#file-input').value = '';
@@ -668,73 +1024,56 @@
 
     function handleFileSelect() {
       const files = $('#file-input').files;
-      if (files.length === 0) {
+      if (!files.length) {
         $('#file-list').style.display = 'none';
         $('#confirm-upload-btn').disabled = true;
         return;
       }
-
       selectedFiles = files;
       const fileList = $('#file-list');
       fileList.innerHTML = '';
-      
       Array.from(files).forEach(file => {
         const item = document.createElement('div');
         item.className = 'file-list-item';
         item.textContent = `${file.name} (${formatFileSize(file.size)})`;
         fileList.appendChild(item);
       });
-      
       fileList.style.display = 'block';
       $('#confirm-upload-btn').disabled = false;
     }
 
     async function uploadFiles() {
-      if (!selectedFiles || selectedFiles.length === 0) return;
-
+      if (!selectedFiles || !selectedFiles.length) return;
       const btn = $('#confirm-upload-btn');
       const originalText = btn.textContent;
       btn.disabled = true;
-      btn.innerHTML = '<div class="spinner"></div> Uploading...';
+      btn.innerHTML = '<div class="spinner" style="border-top-color:#007aff;border-color:rgba(0,122,255,0.2);"></div> Uploading...';
 
       try {
         const fd = new FormData();
         const fileNames = [];
-        
         for (const file of selectedFiles) {
           fd.append('files', file);
-          fileNames.push({
-            name: file.name,
-            type: file.name.split('.').pop().toLowerCase()
-          });
+          fileNames.push({ name: file.name, type: file.name.split('.').pop().toLowerCase() });
         }
-
         const res = await fetch('/upload', { method: 'POST', body: fd });
         if (!res.ok) throw new Error((await res.json()).detail || 'Upload failed');
-        
         const data = await res.json();
-        const sessionId = data.session_id;
 
-        // Store document info
         const newDoc = {
-          id: sessionId,
+          id: data.session_id,
           name: fileNames.map(f => f.name).join(', '),
           type: fileNames.map(f => f.type).join(', '),
           files: fileNames,
           messages: []
         };
-
         documents.push(newDoc);
-        localStorage.setItem('rag_documents', JSON.stringify(documents));
-
-        // Set as active and render
-        activeDocId = sessionId;
+        saveDocuments();
+        activeDocId = data.session_id;
         localStorage.setItem('rag_active_doc', activeDocId);
-        
         renderDocumentList();
         setActiveDocument(activeDocId);
         closeUploadModal();
-        
         toast('Documents uploaded successfully!');
       } catch (e) {
         console.error(e);
@@ -745,57 +1084,97 @@
       }
     }
 
-    // Document list functions
+    // ── Delete ─────────────────────────────────────────────────────────────────
+    function promptDelete(docId, docName, e) {
+      e.stopPropagation(); // prevent triggering setActiveDocument
+      pendingDeleteId = docId;
+      $('#confirm-dialog-msg').textContent =
+        `"${docName}" and all its chat history will be permanently deleted from the backend.`;
+      $('#confirm-dialog').classList.add('active');
+    }
+
+    function closeConfirmDialog() {
+      $('#confirm-dialog').classList.remove('active');
+      pendingDeleteId = null;
+    }
+
+    async function executeDelete() {
+      if (!pendingDeleteId) return;
+      const docId = pendingDeleteId;
+      closeConfirmDialog();
+
+      try {
+        const res = await fetch(`/delete/${docId}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error((await res.json()).detail || 'Delete failed');
+
+        // Remove from local state
+        documents = documents.filter(d => d.id !== docId);
+        saveDocuments();
+
+        // If deleted doc was active, reset the chat area
+        if (activeDocId === docId) {
+          activeDocId = null;
+          localStorage.removeItem('rag_active_doc');
+          $('#chat-interface').classList.remove('active');
+          $('#welcome-state').style.display = '';
+        }
+
+        renderDocumentList();
+        toast('Document deleted successfully.');
+      } catch (e) {
+        console.error(e);
+        toast('Failed to delete document. Please try again.');
+      }
+    }
+
+    // ── Document list ──────────────────────────────────────────────────────────
     function renderDocumentList() {
       const list = $('#document-list');
-      
-      if (documents.length === 0) {
-        list.innerHTML = `
-          <div class="empty-state">
-            No documents uploaded yet.<br>Click the button above to get started.
-          </div>
-        `;
+      if (!documents.length) {
+        list.innerHTML = `<div class="empty-state">No documents uploaded yet.<br>Click the button above to get started.</div>`;
         return;
       }
-
       list.innerHTML = documents.map(doc => `
-        <div class="document-item ${doc.id === activeDocId ? 'active' : ''}" 
-             data-doc-id="${doc.id}">
-          <div class="doc-name">${doc.name}</div>
-          <div class="doc-type">${doc.type}</div>
+        <div class="document-item ${doc.id === activeDocId ? 'active' : ''}" data-doc-id="${doc.id}">
+          <div class="doc-info">
+            <div class="doc-name">${escapeHtml(doc.name)}</div>
+            <div class="doc-type">${escapeHtml(doc.type)}</div>
+          </div>
+          <button class="doc-delete-btn" data-doc-id="${doc.id}" title="Delete document">✕</button>
         </div>
       `).join('');
 
-      // Add click handlers
+      // Select document on item click (not on delete btn)
       $$('.document-item').forEach(item => {
-        item.addEventListener('click', () => {
-          const docId = item.dataset.docId;
-          setActiveDocument(docId);
+        item.addEventListener('click', () => setActiveDocument(item.dataset.docId));
+      });
+
+      // Delete button handlers
+      $$('.doc-delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const docId = btn.dataset.docId;
+          const doc   = documents.find(d => d.id === docId);
+          if (doc) promptDelete(docId, doc.name, e);
         });
       });
     }
 
     function setActiveDocument(docId) {
-      activeDocId = docId;
-      localStorage.setItem('rag_active_doc', activeDocId);
-      
       const doc = documents.find(d => d.id === docId);
       if (!doc) return;
+      activeDocId = docId;
+      localStorage.setItem('rag_active_doc', activeDocId);
 
-      // Update UI
       $('#welcome-state').style.display = 'none';
       $('#chat-interface').classList.add('active');
-      
       $('#active-doc-name').textContent = doc.name;
       $('#active-doc-type').textContent = `${doc.type.toUpperCase()} • Chat with your document`;
-      
-      // Render messages
+
       renderMessages(doc.messages);
-      
-      // Update sidebar
       renderDocumentList();
     }
 
+    // ── Messages ───────────────────────────────────────────────────────────────
     function renderMessages(messages) {
       const container = $('#messages');
       container.innerHTML = messages.map(msg => `
@@ -804,74 +1183,85 @@
           <div class="message-content">${escapeHtml(msg.content)}</div>
         </div>
       `).join('');
-      
       container.scrollTop = container.scrollHeight;
     }
 
-    async function sendMessage() {
-      if (!activeDocId) {
-        toast('Please select a document first');
-        return;
-      }
+    function showThinkingBubble() {
+      const container = $('#messages');
+      const bubble = document.createElement('div');
+      bubble.className = 'message assistant thinking-bubble';
+      bubble.id = 'thinking-bubble';
+      bubble.innerHTML = `
+        <div class="message-avatar">A</div>
+        <div class="message-content">
+          <div class="thinking-dots">
+            <span></span><span></span><span></span>
+          </div>
+        </div>`;
+      container.appendChild(bubble);
+      container.scrollTop = container.scrollHeight;
+    }
 
+    function removeThinkingBubble() {
+      const bubble = $('#thinking-bubble');
+      if (bubble) bubble.remove();
+    }
+
+    // ── Send ───────────────────────────────────────────────────────────────────
+    async function sendMessage() {
+      if (!activeDocId) { toast('Please select a document first'); return; }
       const input = $('#message-input');
-      const text = input.value.trim();
-      
+      const text  = input.value.trim();
       if (!text) return;
 
       const doc = documents.find(d => d.id === activeDocId);
       if (!doc) return;
 
-      // Add user message
       doc.messages.push({ role: 'user', content: text });
       renderMessages(doc.messages);
-      
       input.value = '';
       input.style.height = 'auto';
 
-      // Update UI
-      const sendBtn = $('#send-btn');
-      const sendIcon = $('#send-icon');
+      const sendBtn     = $('#send-btn');
+      const sendIcon    = $('#send-icon');
       const sendSpinner = $('#send-spinner');
-      
-      sendBtn.disabled = true;
+      sendBtn.disabled       = true;
       sendIcon.style.display = 'none';
       sendSpinner.style.display = 'block';
+
+      showThinkingBubble();
 
       try {
         const res = await fetch('/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            session_id: activeDocId, 
-            message: text 
-          })
+          body: JSON.stringify({ session_id: activeDocId, message: text })
         });
-
         if (!res.ok) throw new Error((await res.json()).detail || 'Chat failed');
-        
         const data = await res.json();
-        
-        // Add assistant message
+
+        removeThinkingBubble();
         doc.messages.push({ role: 'assistant', content: data.answer });
-        
-        // Save to localStorage
-        localStorage.setItem('rag_documents', JSON.stringify(documents));
-        
+        saveDocuments();
         renderMessages(doc.messages);
       } catch (e) {
         console.error(e);
-        toast('Failed to get response. Please try again.');
-        doc.messages.pop(); // Remove user message on error
+        removeThinkingBubble();
+        doc.messages.pop();
         renderMessages(doc.messages);
+        toast('Failed to get response. Please try again.');
       } finally {
-        sendBtn.disabled = false;
+        sendBtn.disabled       = false;
         sendIcon.style.display = 'block';
         sendSpinner.style.display = 'none';
       }
     }
 
-    // Utility functions
+    // ── Utils ──────────────────────────────────────────────────────────────────
+    function saveDocuments() {
+      localStorage.setItem('rag_documents', JSON.stringify(documents));
+    }
+
     function formatFileSize(bytes) {
       if (bytes < 1024) return bytes + ' B';
       if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';

@@ -57,3 +57,4 @@ Thumbs.db
 
 # Documentation builds
 docs/_build/
+*.txt

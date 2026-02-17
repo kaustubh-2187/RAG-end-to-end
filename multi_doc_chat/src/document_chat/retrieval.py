@@ -19,9 +19,10 @@ from pydantic import ValidationError
 
 class ConversationalRAG:
 
-    def __init__(self, session_id: Optional[str], retriever=None):
+    def __init__(self, session_id: Optional[str], retriever=None, provider_override: str = None):
         try:
             self.session_id = session_id
+            self.provider_override = provider_override
 
             # Load LLM and prompts once
             self.llm = self._load_llm()
@@ -143,7 +144,7 @@ class ConversationalRAG:
 
     def _load_llm(self):
         try:
-            llm = ModelLoader().load_llm()
+            llm = ModelLoader().load_llm(provider_override=self.provider_override)
             if not llm:
                 raise ValueError("LLM could not be loaded")
             log.info("LLM loaded successfully", session_id=self.session_id)
