@@ -1,5 +1,7 @@
 # Environment and secrets
 .env
+.dvc
+.dvc/
 .env.*
 *.key
 *.pem
@@ -31,6 +33,7 @@ data/
 faiss_index/
 /data
 /faiss_index
+/archive
 
 # Logs and temp files
 logs/
@@ -49,7 +52,6 @@ Thumbs.db
 
 # Jupyter Notebook
 .ipynb_checkpoints/
-*.ipynb
 
 # mypy
 .mypy_cache/
@@ -58,3 +60,7 @@ Thumbs.db
 # Documentation builds
 docs/_build/
 *.txt
+
+**/build_dataset.py
+**/sample.py
+experiments/generate_dataset.py

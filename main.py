@@ -10,6 +10,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
+from langsmith import get_current_run_tree, traceable
 from pydantic import BaseModel
 
 from multi_doc_chat.utils.config_loader import load_config
@@ -42,7 +43,7 @@ DATA_DIR = os.getenv("DATA_DIR", "data")
 FAISS_DIR = os.getenv("FAISS_DIR", "faiss_index")
 
 SESSIONS: Dict[str, List[dict]] = {}
-CURRENT_PROVIDER: str = "google"  # Runtime LLM provider — changed via /model/set
+CURRENT_PROVIDER: str = "google"
 
 @app.get('/health')
 def health() -> Dict[str, str]:
@@ -68,6 +69,14 @@ async def upload(files: List[UploadFile] = File(...)) -> UploadResponse:
         )
         session_id = ingestor.session_id
 
+        run = get_current_run_tree()
+        if run:
+            run.extra["metadata"] = {
+                "session_id": session_id,
+                "files": [f.filename for f in files],
+                "event": "document_upload"
+            }
+
         # Save, load, split, embed and write FAISS index
         ingestor.built_retriver(uploaded_files=wrapped_files)
 
@@ -79,7 +88,13 @@ async def upload(files: List[UploadFile] = File(...)) -> UploadResponse:
         raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Upload failed: {e}")
-    
+
+@traceable(name="Chat Pipeline", run_type="chain")
+def run_chat_pipeline(session_id: str, message: str, provider: str, lc_history: list) -> str:
+    rag = ConversationalRAG(session_id=session_id, provider_override=provider)
+    index_path = f"{FAISS_DIR}/{session_id}"
+    rag.load_retriever_from_faiss(index_path=index_path)
+    return rag.invoke(message, chat_history=lc_history)  
 @app.post("/chat", response_model=ChatResponse)
 async def chat(req: ChatRequest) -> ChatResponse:
     session_id = req.session_id
@@ -91,7 +106,6 @@ async def chat(req: ChatRequest) -> ChatResponse:
     
     try:
         # Build RAG and load retriever from persisted FAISS
-        # Pass CURRENT_PROVIDER so ModelLoader uses it instead of reading from YAML
         rag = ConversationalRAG(session_id=session_id, provider_override=CURRENT_PROVIDER)
         index_path = f"{FAISS_DIR}/{session_id}"
         rag.load_retriever_from_faiss(index_path=index_path)
@@ -107,7 +121,21 @@ async def chat(req: ChatRequest) -> ChatResponse:
             elif role == "assistant":
                 lc_history.append(AIMessage(content=content))
         
-        answer = rag.invoke(message, chat_history=lc_history)
+        answer = run_chat_pipeline(
+            session_id=session_id,
+            message=message,
+            provider=CURRENT_PROVIDER,
+            lc_history=lc_history,
+            langsmith_extra={"metadata": {"session_id": session_id, "ls_thread_id": session_id}}
+        )
+
+        run = get_current_run_tree()
+        if run:
+            run.extra["metadata"] = {
+                "session_id": session_id,
+                "provider": CURRENT_PROVIDER,
+                "thread_id": session_id 
+            }
 
         # Update History
         simple.append({"role":"user", "content":message})
@@ -178,5 +206,5 @@ async def set_model(request: Request):
 
 if __name__=="__main__":
     import uvicorn
-    port = int(os.getenv("PORT", "8000"))  # Convert string to int
+    port = int(os.getenv("PORT", "8000"))
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)

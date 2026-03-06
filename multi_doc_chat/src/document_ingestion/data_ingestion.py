@@ -8,6 +8,8 @@ from langchain_community.vectorstores import FAISS
 from multi_doc_chat.utils.model_loader import ModelLoader
 from multi_doc_chat.logger import GLOBAL_LOGGER as log
 from multi_doc_chat.exception.custom_exception import DocumentPortalException
+from langsmith import traceable
+
 import json
 import uuid
 from datetime import datetime
@@ -60,6 +62,7 @@ class ChatIngestor:
             return d
         return base # fallback: "faiss_index/"
 
+    @traceable(name="Document Splitting", tags=["ingestion"])
     def _split(self, docs: List[Document], chunk_size=1000, chunk_overlap=200) -> List[Document]:
         splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         chunks = splitter.split_documents(docs)
@@ -78,6 +81,7 @@ class ChatIngestor:
         log.info("Documents split", chunks=len(chunks), chunk_size=chunk_size, overlap=chunk_overlap)
         return chunks
 
+    @traceable(name="Build Retriever", tags=["ingestion"], metadata={"stage": "indexing"})
     def built_retriver( self,
         uploaded_files: Iterable,
         *,

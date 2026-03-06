@@ -3,13 +3,15 @@ from pathlib import Path
 from typing import Iterable, List
 from langchain_core.documents import Document
 from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader, TextLoader
+from langsmith import traceable
+
 from multi_doc_chat.logger import GLOBAL_LOGGER as log
 from multi_doc_chat.exception.custom_exception import DocumentPortalException
 from fastapi import UploadFile
 
 SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".txt"}
 
-
+@traceable(name="Load Documents", tags=["ingestion"])
 def load_documents(paths: Iterable[Path]) -> List[Document]:
     """Load docs using appropriate loader based on extension."""
     docs: List[Document] = []

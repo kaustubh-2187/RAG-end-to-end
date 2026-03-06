@@ -1,0 +1,2 @@
+experiment,name,chunk_size,chunk_overlap,k,search_type,fetch_k,lambda_mult,provider,context_recall,llm_context_precision_with_reference,faithfulness,answer_relevancy,factual_correctness(mode=f1),semantic_similarity,mrr
+baseline,baseline,1000,200,5,similarity,20,0.5,groq,0.6,0.6076923076315384,0.39285714285714285,0.5673699436317913,0.4027586206896552,0.7078430052317211,0.7780952380952382

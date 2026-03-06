@@ -1,0 +1,366 @@
+[
+  {
+    "document_index": 11,
+    "question_type": "single_passage",
+    "question": "How much faster is the Tesla A100 compared to the Tesla V100?",
+    "answer": "When measured on the SE-ResNeXt101 deep learning architecture, the Tesla A100 was 1.43x faster than the Tesla V100. When measured on the Masked-R-CNN deep learning architecture the Tesla A100 was 1.47x faster than the Tesla V100. When measured on the Transformer (12 layer, Machine Translation, WMT14 en-de) deep learning architecture, the Tesla A100 was 1.70x faster than the Tesla V100.",
+    "contexts": [
+      "Which GPU(s) to Get for Deep Learning: My Experience and Advice for Using GPUs in Deep Learning\n2023-01-30 by Tim Dettmers 1,664 Comments\n\nDeep learning is a field with intense computational requirements, and your choice of GPU will fundamentally determine your deep learning experience. But what features are important if you want to buy a new GPU? GPU RAM, cores, tensor cores, caches? How to make a cost-efficient choice? This blog post will delve into these questions, tackle common misconceptions, give you an intuitive understanding of how to think about GPUs, and will lend you advice, which will help you to make a choice that is right for you."
+    ],
+    "source": "handcrafted"
+  },
+  {
+    "document_index": 11,
+    "question_type": "single_passage",
+    "question": "For what work did I receive criticism for my reduction of FLOPS?",
+    "answer": "You received criticism for your research on sparse network training.",
+    "contexts": [
+      "I was working on sparse network training in my research and I also wrote a blog post about sparse training. One criticism of my work was that \u201cYou reduce the FLOPS required for the network, but it does not yield speedups because GPUs cannot do fast sparse matrix multiplication.\u201d"
+    ],
+    "source": "handcrafted"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage",
+    "question": "Other than this blog post, what has the author written?",
+    "answer": "The author has also written: a paper about the emergence of instabilities in large language models and a more accessible blog post on the same topic; a LLM.int8() paper; a sparse training blog post; a TPU vs GPU blog post; and a paper about k-bit inference scaling laws.",
+    "contexts": [],
+    "source": "handcrafted"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage",
+    "question": "In what contexts is BERT mentioned?",
+    "answer": "It is mentioned that for BERT large during training, the input and weight matrix of any matrix multiplication fit neatly into the L2 cache of Ada (but not other Us). The author also mentions that they benchmarked the time for 500 mini-batches for BERT Large during inference (excluding the softmax layer) on the 4x RTX 2080 Ti system. They chose BERT Large inference since, from their experience, this is the deep learning model that stresses the GPU the most.",
+    "contexts": [],
+    "source": "handcrafted"
+  },
+  {
+    "document_index": 11,
+    "question_type": "no_answer",
+    "question": "Which TPU is recommended?",
+    "answer": "I don't know.",
+    "contexts": [],
+    "source": "handcrafted"
+  },
+  {
+    "document_index": 11,
+    "question_type": "no_answer",
+    "question": "What is the rest temperature of the RTX 4090 GPU?",
+    "answer": "I don't know.",
+    "contexts": [],
+    "source": "handcrafted"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "Wich GPU to get for deap learnin?",
+    "answer": "The choice of GPU fundamentally determines your deep learning experience, with important features including GPU RAM, cores, tensor cores, and caches.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "What are the key differences in performance capabilities between GPUs and CPUs that make GPUs particularly suited for artificial intelligence and deep learning tasks?",
+    "answer": "GPUs are noted for their performance advantages over CPUs, particularly in tasks that can be parallelized, such as those in artificial intelligence and deep learning.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "what rtx 30 series gpu features support fast deep learning processing",
+    "answer": "The RTX 30 series GPUs support matrix multiplication with Tensor Cores and asynchronous copies, which are features that enhance deep learning processing speed.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "What are the considerations for fitting multiple RTX 4090 GPUs in a system given their physical space requirements?",
+    "answer": "When trying to fit 4x RTX 4090 or 3090 GPUs, which take up 3 PCIe slots each, considerations include the physical space requirements and the PCIe lane configurations.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "What are the differences between NVIDIA GPUs and AMD GPUs in terms of performance",
+    "answer": "NVIDIA GPUs, particularly with CUDA, are compared to AMD GPUs with ROCm, with the blog post discussing the potential for AMD to catch up with NVIDIA.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "what gpu good for",
+    "answer": "GPUs are well-suited to deep learning, you can read Tim Dettmers' answer on Quora for an explanation.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "Wut r teh most importnt specs of a GPU?",
+    "answer": "The most important GPU specs for deep learning processing speed are Tensor Cores, followed by memory bandwidth, the cache hierarchy, and then FLOPS.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "What is CUDA used for in AI engineering?",
+    "answer": "CUDA is used for programming and optimization of computational units, particularly for matrix multiplication in deep learning systems.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "What GPU generation has relatively slow caches according to the provided context?",
+    "answer": "Ampere GPUs have relatively slow caches.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "what is global memory on gpu",
+    "answer": "Global memory on a GPU refers to a type of memory access that can handle up to 80GB, with an access time of approximately 380 cycles.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "wut is teh use of RTX 3090 in computatinal resourses?",
+    "answer": "The RTX 3090 is used in computational resources, for example, 8 SMs (about 10% of an RTX 3090) and 8 warps per SM are used for a small 32x32 matrix multiply example.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "What are the performance implications and power consumption concerns of using the NVIDIA RTX 3090 compared to other GPUs in the NVIDIA Ampere RTX 30 series?",
+    "answer": "The RTX 3090 has a TDP of over 350W and a 3-slot design, making it challenging to cool in multi-GPU setups.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "How do Tensor Cores enhance the performance of matrix multiplication in terms of FLOPS and cycle cost compared to traditional methods?",
+    "answer": "Tensor Cores perform 4x4 matrix multiplication in one cycle. For a 32x32 matrix multiply, total cycle cost is 235 cycles vs 504 cycles without Tensor Cores.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "How does the Ampere architecture utilize matrix multiplication and memory hierarchy to enhance performance?",
+    "answer": "Ampere uses 128kb shared memory and 6MB L2 cache, chunking matrix multiplication into memory tiles to reduce global memory access latency.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "What is the impact of matrix multiplication on the electricity cost of owning an AWS V100 spot instance versus a desktop with an RTX 3090?",
+    "answer": "At 15% utilization, the desktop uses 591 kWh/year ($71). Break-even vs AWS on-demand ($2.14/hr) is about 300 days.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "What are advantages of NVIDIA Ampere RTX 30 series GPUs over NVIDIA Turing RTX 20 series GPUs?",
+    "answer": "The Ampere RTX 30 series adds sparse network training/inference and new data types that improve ease-of-use over the Turing RTX 20 series.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "How does the NVIDIA Ampere RTX 30 series impact GPU performance in transformer applications compared to the RTX 40 series?",
+    "answer": "The RTX 40 series adds FP8 tensor cores; an RTX 4090 has about 0.33x the 8-bit inference performance of an H100 SXM.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "How do Tensor Cores leverage CUDA and benefit from sparse matrix compression?",
+    "answer": "Sparse matrix compression halves bandwidth requirements enabling up to 2x training speedups. Memory bandwidth (e.g. A100: 1555 GB/s vs V100: 900 GB/s) is the key performance bottleneck.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "Wut r teh key GPU specs for deep learnin with int8 inference?",
+    "answer": "Tensor Cores, memory bandwidth, and cache hierarchy. Int8 on older GPUs is only relevant for models above 175B parameters.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "What are L40 GPUs good for in deep learning and how do they compare to A6000 GPUs?",
+    "answer": "L40 GPUs are a viable alternative to A6000 Ada GPUs for academic/startup servers if a good deal is available.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "How does the RTX 2080 Ti benefit from parallelization in deep learning applications?",
+    "answer": "PCIe 4.0/5.0 offers 1-7% better parallelization in 4-GPU setups but is generally not needed for most users.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "What is the role of shared memory in the GPU memory hierarchy for matrix multiplication?",
+    "answer": "Shared memory acts as fast intermediate storage (34-cycle latency vs 200 for global memory), enabling async overlap that reduces average access cost to ~200 cycles total.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "What are the challenges associated with using 8-bit precision in transformers?",
+    "answer": "Transformers become very unstable with 8-bit precision; stability is maintained by keeping a few dimensions in high precision.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "How do I cool 4x RTX 3080?",
+    "answer": "See the PCIe extenders section; spreading GPUs with extenders provides 10-30C improvement and resolves space and cooling issues.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "How does CUDA relate to the performance of NVIDIA GPUs versus AMD GPUs with ROCm?",
+    "answer": "CUDA ecosystem and community give NVIDIA a strong advantage; AMD ROCm has good PyTorch support but lacks Tensor Core equivalent hardware.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "What are the challenges of cooling a 4x RTX 3080 GPU setup?",
+    "answer": "RTX 3080 has 320W TDP; cooling a 4x setup is very difficult and requires PCIe extenders or blower-style coolers.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "What is the relative performance per US Dollar of the RTX 4070 Ti compared to other GPUs over 5 years?",
+    "answer": "A desktop with RTX 4070 Ti cards owned for 5 years yields about 2x more 8-bit inference performance per dollar vs a RTX 3090.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "Can power limits be set on RTX 3080 GPUs to manage power in multi-GPU setups?",
+    "answer": "Yes; limiting RTX 3090 to 300W saves 200W in a 4x system, potentially making a 1600W PSU viable.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "What are the advantages of BF16 over FP16 in training stability?",
+    "answer": "BF16 has the same exponent range as FP32, eliminating gradient explosion risk and the need for loss scaling, while providing the same speedups as FP16.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "What are the current limitations for improving GPU speed like the RTX 40s series?",
+    "answer": "SRAM improvements no longer yield speed gains; the main path is more power/cooling, which is unsustainable. HBM is too expensive for consumer GPUs.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "multi_passage_specific",
+    "question": "How does ROCm compare to NVIDIA's CUDA ecosystem for deep learning?",
+    "answer": "ROCm has good PyTorch support but lacks AMD Tensor Core equivalent hardware and community; NVIDIA likely keeps its deep learning monopoly for 2+ more years.",
+    "contexts": [],
+    "source": "generated"
+  },
+  {
+    "document_index": 11,
+    "question_type": "no_answer",
+    "question": "What AMD GPU does the author recommend for deep learning?",
+    "answer": "I don't know.",
+    "contexts": [],
+    "source": "handcrafted"
+  },
+  {
+    "document_index": 11,
+    "question_type": "no_answer",
+    "question": "How much does an NVIDIA H100 GPU cost?",
+    "answer": "I don't know.",
+    "contexts": [],
+    "source": "handcrafted"
+  },
+  {
+    "document_index": 11,
+    "question_type": "no_answer",
+    "question": "What is the power consumption of the RTX 3090?",
+    "answer": "I don't know.",
+    "contexts": [],
+    "source": "handcrafted"
+  },
+  {
+    "document_index": 11,
+    "question_type": "no_answer",
+    "question": "Which laptop GPU is best for deep learning?",
+    "answer": "I don't know.",
+    "contexts": [],
+    "source": "handcrafted"
+  },
+  {
+    "document_index": 11,
+    "question_type": "no_answer",
+    "question": "Does the author recommend Apple Silicon for training large models?",
+    "answer": "I don't know.",
+    "contexts": [],
+    "source": "handcrafted"
+  },
+  {
+    "document_index": 11,
+    "question_type": "no_answer",
+    "question": "What Linux drivers are required for CUDA on RTX 40 series?",
+    "answer": "I don't know.",
+    "contexts": [],
+    "source": "handcrafted"
+  },
+  {
+    "document_index": 11,
+    "question_type": "no_answer",
+    "question": "What is the NVLink bandwidth between two RTX 4090 GPUs?",
+    "answer": "I don't know.",
+    "contexts": [],
+    "source": "handcrafted"
+  },
+  {
+    "document_index": 11,
+    "question_type": "no_answer",
+    "question": "How does the author benchmark inference speed on edge devices?",
+    "answer": "I don't know.",
+    "contexts": [],
+    "source": "handcrafted"
+  }
+]

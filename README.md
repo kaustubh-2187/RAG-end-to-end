@@ -2,37 +2,79 @@
 
 **Live Demo:** https://multi-doc-chat-655964848309.us-central1.run.app
 
-A RAG application that enables conversations with multiple documents simultaneously. Built with FastAPI, LangChain, and FAISS, deployed on Google Cloud Run.
+A conversational RAG system for uploading documents and chatting with them. Built with FastAPI and LangChain, evaluated with a custom RAGAS pipeline, deployed on Google Cloud Run.
 
 ---
 
-## Overview
+## Pipeline Design
 
-This project lets you upload documents and chat with them using retrieval-augmented generation. Each document maintains its own isolated conversation history, and you can switch between documents seamlessly. The system chunks and embeds documents into a FAISS vector store, retrieves relevant context at query time, and passes it to an LLM to generate grounded responses.
+Before retrieval, the user's message and the full conversation history are passed to an LLM that rewrites the input into a self-contained standalone question. Follow-up questions like *"what about the second point?"* carry full context into the retriever rather than relying on the raw message alone.
+
+```
+Query
+  └── Question Rewriter (LLM + chat history)
+        └── Standalone question → FAISS Retriever
+              └── Retrieved chunks → Answer Generator (LLM) → Response
+```
 
 ---
 
-## Architecture
+## Evaluation
 
-```
-User Query
-    ↓
-[Document Upload] → Text Splitting → Embeddings → FAISS Index
-                                                        ↓
-[Chat Request] → Query Embedding → Similarity Search → Retrieved Chunks
-                                                        ↓
-                                              LLM (with context) → Response
-```
+The `experiments/` directory contains an offline evaluation pipeline across 7 metrics.
 
-**Key Components:**
+### Dataset
 
-- **Document Ingestion** (`multi_doc_chat/src/document_ingestion/`): Handles file parsing (PDF, DOCX, TXT), text splitting, and embedding generation. Each document gets its own FAISS index stored separately.
+The dataset contains **45 questions** built against a technical blog post on GPU deep learning. 6 are handcrafted and cover the core question types. The rest are synthetically generated using RAGAS `TestsetGenerator` — which builds a knowledge graph from the document chunks and synthesizes questions across different reasoning patterns.
 
-- **Document Chat** (`multi_doc_chat/src/document_chat/`): Manages retrieval and response generation. Uses LangChain's conversational retrieval chain with per-document memory buffers.
+- **`single_passage`** — answer contained in a single chunk.
+- **`multi_passage`** — answer requires synthesizing across multiple chunks.
+- **`no_answer`** — answer is not in the document; ground truth is *"I don't know."* ⚠️
+- **`multi_passage_specific`** — synthetically generated with realistic noise (typos, vague phrasing).
 
-- **Config** (`multi_doc_chat/config/`): Centralizes LLM provider selection, embedding model, chunking parameters, and retrieval settings.
+### Metrics
 
-- **Frontend** (`static/`, `templates/`): Vanilla JS with a 20/80 split layout — document sidebar on the left, chat on the right.
+| Metric | What it measures |
+|---|---|
+| **Context Recall** | Did the retriever fetch the chunks containing the answer? |
+| **Context Precision** | Of the retrieved chunks, how many were actually relevant? |
+| **Faithfulness** | Does the generated answer stay grounded in the retrieved context? |
+| **Answer Relevancy** | Is the answer responsive to the question asked? |
+| **Factual Correctness (F1)** | Does the answer match the reference facts? |
+| **Semantic Similarity** | Embedding-level similarity between generated and reference answer. |
+| **MRR** | Where does the first relevant chunk appear in the retrieved list? |
+
+LLM-based metrics use **Gemini 2.5 Flash** as judge. The RAG generator uses **Llama 3.3 70B via Groq**. MRR is computed independently.
+
+### Experiment Configs
+
+Each group isolates one variable against the baseline (`chunk_size=1000`, `overlap=200`, `k=5`, similarity search).
+
+**Chunk Size**
+- `chunk_500` — chunk_size=500, overlap=100
+- `chunk_1500` — chunk_size=1500, overlap=300
+
+**Retrieval Depth**
+- `k_3` — retrieve 3 chunks
+- `k_8` — retrieve 8 chunks
+
+**Search Algorithm** — MMR balances relevance with diversity. `lambda_mult` controls the trade-off.
+- `search_mmr_balanced` — λ=0.5
+- `search_mmr_relevant` — λ=0.8
+- `search_mmr_diverse` — λ=0.2
+
+### Results ⏳
+
+| Config | Recall | Precision | Faithfulness | Ans. Relevancy | Factual F1 | Sem. Sim | MRR |
+|---|---|---|---|---|---|---|---|
+| **baseline** | 0.600 | 0.608 | 0.393 | 0.567 | 0.403 | 0.708 | 0.778 |
+| chunk_500 | — | — | — | — | — | — | — |
+| chunk_1500 | — | — | — | — | — | — | — |
+| k_3 | — | — | — | — | — | — | — |
+| k_8 | — | — | — | — | — | — | — |
+| search_mmr_balanced | — | — | — | — | — | — | — |
+| search_mmr_relevant | — | — | — | — | — | — | — |
+| search_mmr_diverse | — | — | — | — | — | — | — |
 
 ---
 
@@ -40,13 +82,13 @@ User Query
 
 ```
 RAG/
-├── main.py                      # FastAPI entry point
+├── main.py
 ├── requirements.txt
 ├── Dockerfile
-├── Jenkinsfile                  # CI/CD pipeline
+├── Jenkinsfile
 │
 ├── multi_doc_chat/
-│   ├── config/                  # Configuration
+│   ├── config/                  # YAML config (LLM, retriever, embeddings)
 │   ├── model/                   # Pydantic schemas
 │   ├── prompts/                 # Prompt templates
 │   ├── src/
@@ -54,66 +96,33 @@ RAG/
 │   │   └── document_chat/       # Retrieval and chat logic
 │   └── utils/
 │
-├── static/                      # CSS, JS
-├── templates/index.html         # Frontend
-├── notebook/                    # Experimentation notebooks
-└── evaluation/                  # Evaluation scripts
+├── experiments/
+│   ├── configs.py               # Experiment configurations
+│   ├── dataset.json             # 45-question evaluation dataset
+│   ├── evaluators.py            # RAGAS + MRR scoring
+│   ├── run_experiment.py        # Experiment runner (skip-if-done, save-as-you-go)
+│   └── outputs/                 # Results CSVs
+│
+└── templates/index.html
 ```
 
 ---
 
 ## Setup
 
-**Prerequisites:**
-- Python 3.11+
-- At least one API key: `OPENAI_API_KEY`, `GOOGLE_API_KEY`, or `GROQ_API_KEY`
-
-**Local Development:**
-
 ```bash
-git clone <repo-url>
-cd RAG
-
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
+git clone <repo-url> && cd RAG
+python -m venv venv && source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-
-# Set environment variables
-export GOOGLE_API_KEY="your-key"
-export GROQ_API_KEY="your-key"
-
-python main.py
+cp .env.example .env  # add GOOGLE_API_KEY, GROQ_API_KEY, HF_TOKEN
+python main.py        # visit http://localhost:8000
 ```
-
-Visit `http://localhost:8000`
 
 ---
 
 ## Deployment
 
-**Docker:**
-
 ```bash
 docker build -t multi-doc-chat .
-docker run -p 8000:8000 \
-  -e GOOGLE_API_KEY=$GOOGLE_API_KEY \
-  -e GROQ_API_KEY=$GROQ_API_KEY \
-  multi-doc-chat
+docker run -p 8000:8000 -e GOOGLE_API_KEY=$GOOGLE_API_KEY -e GROQ_API_KEY=$GROQ_API_KEY multi-doc-chat
 ```
-
-**Cloud Run:**
-
-The project includes a `Jenkinsfile` pipeline that builds the Docker image, pushes to Google Container Registry, and deploys to Cloud Run.
-
----
-
-## API Endpoints
-
-```
-GET  /health        # Health check
-POST /upload        # Upload and index a document
-POST /chat          # Send a message to a document
-```
-
-Full docs available at `http://localhost:8000/docs` when running locally.
