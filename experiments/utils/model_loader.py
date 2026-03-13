@@ -3,7 +3,7 @@ import sys
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_huggingface import HuggingFaceEndpointEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 
 from logger import GLOBAL_LOGGER as log
 from exception.custom_exception import DocumentPortalException
@@ -39,9 +39,8 @@ class ModelLoader:
 
     def load_embeddings(self):
         try:
-            return HuggingFaceEndpointEmbeddings(
-                huggingfacehub_api_token=self.api_key_mgr.get("HF_TOKEN"),
-                model=EMBEDDING_MODEL,
+            return HuggingFaceEmbeddings(
+                model_name=EMBEDDING_MODEL,
             )
         except Exception as e:
             log.error("Error loading embedding model", error=str(e))

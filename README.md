@@ -63,18 +63,44 @@ Each group isolates one variable against the baseline (`chunk_size=1000`, `overl
 - `search_mmr_relevant` — λ=0.8
 - `search_mmr_diverse` — λ=0.2
 
-### Results ⏳
+### Results
 
 | Config | Recall | Precision | Faithfulness | Ans. Relevancy | Factual F1 | Sem. Sim | MRR |
 |---|---|---|---|---|---|---|---|
 | **baseline** | 0.600 | 0.608 | 0.393 | 0.567 | 0.403 | 0.708 | 0.778 |
-| chunk_500 | — | — | — | — | — | — | — |
-| chunk_1500 | — | — | — | — | — | — | — |
-| k_3 | — | — | — | — | — | — | — |
-| k_8 | — | — | — | — | — | — | — |
-| search_mmr_balanced | — | — | — | — | — | — | — |
-| search_mmr_relevant | — | — | — | — | — | — | — |
-| search_mmr_diverse | — | — | — | — | — | — | — |
+| chunk_500 | 0.571 | 0.440 | 0.192 | 0.490 | 0.291 | 0.661 | 0.662 |
+| chunk_1500 | 0.667 | 0.374 | 0.260 | 0.559 | 0.263 | 0.657 | 0.789 |
+| k_3 | 0.667 | 0.625 | 0.333 | 0.538 | 0.333 | 0.880 | 0.750 |
+| k_8 | 0.667 | 0.333 | 0.333 | 0.645 | 0.400 | 0.715 | 0.750 |
+| search_mmr_balanced | 0.731 | 0.600 | 0.423 | 0.550 | 0.187 | 0.725 | 0.762 |
+| search_mmr_relevant | 0.808 | 0.596 | 0.222 | 0.520 | 0.224 | 0.687 | 0.770 |
+| search_mmr_diverse | 1.000 | 0.625 | 0.250 | 0.856 | 0.400 | 0.892 | 0.750 |
+
+#### Insights by group
+
+**Baseline**
+- Strongest factual correctness (0.403) and best faithfulness outside MMR, making it the most reliable all-round config.
+
+**Chunk size**
+- `chunk_500` is the weakest config overall — small chunks fragment context and collapse faithfulness to 0.192.
+- `chunk_1500` wins on MRR (0.789) but faithfulness drops, suggesting larger chunks aid retrieval ranking yet introduce LLM-confusing noise.
+
+**Retrieval depth (k)**
+- `k_3` achieves the highest context precision (0.625) and semantic similarity (0.880) — fewer chunks forces the retriever to be more selective.
+- `k_8` improves answer relevancy (0.645) but halves context precision (0.333), showing that more chunks dilute retrieval quality.
+
+**MMR search**
+- `mmr_diverse` (λ=0.2) dominates context recall (1.000), answer relevancy (0.856), and semantic similarity (0.892), but at the cost of faithfulness (0.250).
+- `mmr_balanced` (λ=0.5) is the best MMR config for faithfulness (0.423), offering a practical middle ground between diversity and groundedness.
+- Increasing λ toward relevance (`mmr_relevant`, λ=0.8) boosts recall but sharply reduces faithfulness, revealing a recall–groundedness trade-off within MMR.
+
+#### Key takeaways
+
+- **Recall vs. faithfulness is the central trade-off** — configs that retrieve more (mmr_diverse, k_8) generate less grounded answers.
+- **MMR outperforms similarity search on recall** across all three λ values, confirming it is the better retrieval algorithm for this dataset.
+- **Baseline is a strong default** — no single variant beats it across all metrics simultaneously; improvements are always at the expense of something else.
+- **chunk_500 should be avoided** — it is the only config that degrades performance on every single metric relative to baseline.
+- **`mmr_diverse` is the best config if answer quality (relevancy + semantic similarity) is the priority**; `k_3` or `baseline` if factual precision and faithfulness matter more.
 
 ---
 

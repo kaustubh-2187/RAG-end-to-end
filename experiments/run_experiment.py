@@ -87,6 +87,7 @@ def run_all_experiments():
             provider=config["provider"],
             dataset=dataset,
             config_name=config_name,
+            config=config,
         )
         print(f"  [2/3] Done.")
 

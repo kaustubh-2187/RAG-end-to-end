@@ -2,72 +2,72 @@ from __future__ import annotations
 
 import sys
 import shutil
+import uuid
+from datetime import datetime
 from pathlib import Path
+
 from dotenv import load_dotenv
-
-# Add the project root (one level above experiments/) to sys.path so that
-# the multi_doc_chat package is importable without installing it.
-_PROJECT_ROOT = str(Path(__file__).resolve().parents[1])
-if _PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, _PROJECT_ROOT)
-
-from multi_doc_chat.src.document_ingestion.data_ingestion import ChatIngestor
+from langchain_community.vectorstores import FAISS
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_community.document_loaders import TextLoader
 
 load_dotenv()
 
+# Add experiments dir to path so local imports work
+_EXPERIMENTS_DIR = str(Path(__file__).resolve().parent)
+if _EXPERIMENTS_DIR not in sys.path:
+    sys.path.insert(0, _EXPERIMENTS_DIR)
 
-# CHANGE 1: replaced raw open() + f.name assignment (which raises AttributeError
-# on built-in file objects) with a proper wrapper class.
-# save_uploaded_files() in file_io.py resolves the filename via getattr(uf, "name", ...)
-# and reads content via uf.read() — this wrapper satisfies both requirements.
-class _FileWrapper:
-    """
-    Wraps a binary file path so ChatIngestor.built_retriver() can consume it.
-    Matches the interface expected by save_uploaded_files() in file_io.py:
-      - .name  → used to detect file extension and pick the right loader
-      - .read() → used to write file bytes to the temp directory
-    """
-    def __init__(self, path: Path):
-        self.name = path.name
-        self._path = path
+from utils.model_loader import ModelLoader
 
-    def read(self) -> bytes:
-        return self._path.read_bytes()
+
+def _generate_session_id() -> str:
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    unique_id = uuid.uuid4().hex[:8]
+    return f"session_{timestamp}_{unique_id}"
 
 
 def build_index(doc_path: str, config: dict, faiss_dir: str, data_dir: str) -> str:
     """
-    Build a fresh FAISS index for the given document and config.
-
-    Wipes any existing index at the session path so each
-    experiment starts clean — no stale data from a previous run.
-
+    Independently builds a FAISS index for the given document and config.
+    Completely self-contained — no dependency on multi_doc_chat.
     Returns the session_id of the newly built index.
     """
-    ingestor = ChatIngestor(
-        temp_base=data_dir,
-        faiss_base=faiss_dir,
-        use_session_dirs=True,
-    )
-    session_id = ingestor.session_id
-
-    # Wipe the FAISS dir for this session if it already exists
+    session_id = _generate_session_id()
     session_faiss_path = Path(faiss_dir) / session_id
+
+    # Wipe and recreate session dir for a clean run
     if session_faiss_path.exists():
         shutil.rmtree(session_faiss_path)
-        session_faiss_path.mkdir(parents=True, exist_ok=True)
+    session_faiss_path.mkdir(parents=True, exist_ok=True)
 
-    # CHANGE 2: use _FileWrapper instead of open() + f.name assignment
-    wrapper = _FileWrapper(Path(doc_path))
+    # Load document
+    loader = TextLoader(doc_path, encoding="utf-8")
+    docs = loader.load()
 
-    ingestor.built_retriver(
-        uploaded_files=[wrapper],
+    # Split into chunks
+    splitter = RecursiveCharacterTextSplitter(
         chunk_size=config["chunk_size"],
         chunk_overlap=config["chunk_overlap"],
-        k=config["k"],
-        search_type=config["search_type"],
-        fetch_k=config.get("fetch_k", 20),
-        lambda_mult=config.get("lambda_mult", 0.5),
     )
+    chunks = splitter.split_documents(docs)
+
+    # Add chunk_id metadata
+    for i, chunk in enumerate(chunks):
+        source_stem = Path(chunk.metadata.get("source", "unknown")).stem
+        chunk.metadata["chunk_id"] = f"{source_stem}_chunk{i}"
+
+    print(f"    Chunks created: {len(chunks)}")
+
+    # Load local embeddings (no internet required)
+    embeddings = ModelLoader().load_embeddings()
+
+    # Build and save FAISS index
+    texts = [c.page_content for c in chunks]
+    metas = [c.metadata for c in chunks]
+    vs = FAISS.from_texts(texts=texts, embedding=embeddings, metadatas=metas)
+    vs.save_local(str(session_faiss_path))
+
+    print(f"    FAISS index saved: {session_faiss_path}")
 
     return session_id

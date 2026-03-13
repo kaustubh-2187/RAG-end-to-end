@@ -1,7 +1,6 @@
 # Environment and secrets
 .env
-.dvc
-.dvc/
+.dvc/cache/
 .env.*
 *.key
 *.pem
@@ -59,7 +58,6 @@ Thumbs.db
 
 # Documentation builds
 docs/_build/
-*.txt
 
 **/build_dataset.py
 **/sample.py

@@ -79,6 +79,7 @@ def run_ragas_evaluation(
     provider: str,
     dataset: list,
     config_name: str,
+    config: dict = None,
 ) -> tuple:
     """
     Runs EvalConversationalRAG on every question in the dataset,
@@ -98,6 +99,10 @@ def run_ragas_evaluation(
         )
         rag.load_retriever_from_faiss(
             index_path=f"{faiss_dir}/{session_id}",
+            k=config.get("k", 5) if config else 5,
+            search_type=config.get("search_type", "similarity") if config else "similarity",
+            fetch_k=config.get("fetch_k", 20) if config else 20,
+            lambda_mult=config.get("lambda_mult", 0.5) if config else 0.5,
         )
 
         result = rag.invoke_with_context(
