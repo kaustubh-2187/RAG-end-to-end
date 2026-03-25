@@ -7,6 +7,7 @@ langchain-community==0.3.27
 langchain-core==0.3.72
 langchain_google_genai
 langchain_text_splitters
+langchain-openai
 
 langchain-groq==0.3.6
 langchain-google-genai==2.1.8

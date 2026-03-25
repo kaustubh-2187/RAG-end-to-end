@@ -25,12 +25,11 @@ The `experiments/` directory contains an offline evaluation pipeline across 7 me
 
 ### Dataset
 
-The dataset contains **45 questions** built against a technical blog post on GPU deep learning. 6 are handcrafted and cover the core question types. The rest are synthetically generated using RAGAS `TestsetGenerator` — which builds a knowledge graph from the document chunks and synthesizes questions across different reasoning patterns.
+The dataset contains **120 questions** built against **20 diverse documents** spanning game wikis, policy papers, technical blogs, fiction, recipes, and more. Questions are synthetically generated using RAGAS `TestsetGenerator` — which builds a knowledge graph from the document chunks and synthesizes questions across different reasoning patterns.
 
 - **`single_passage`** — answer contained in a single chunk.
 - **`multi_passage`** — answer requires synthesizing across multiple chunks.
 - **`no_answer`** — answer is not in the document; ground truth is *"I don't know."* ⚠️
-- **`multi_passage_specific`** — synthetically generated with realistic noise (typos, vague phrasing).
 
 ### Metrics
 
@@ -44,63 +43,109 @@ The dataset contains **45 questions** built against a technical blog post on GPU
 | **Semantic Similarity** | Embedding-level similarity between generated and reference answer. |
 | **MRR** | Where does the first relevant chunk appear in the retrieved list? |
 
-LLM-based metrics use **Gemini 2.5 Flash** as judge. The RAG generator uses **Llama 3.3 70B via Groq**. MRR is computed independently.
+LLM-based metrics use **GPT-4o-mini** as both the RAG generator and RAGAS judge. MRR is computed independently.
 
 ### Experiment Configs
 
 Each group isolates one variable against the baseline (`chunk_size=1000`, `overlap=200`, `k=5`, similarity search).
 
-**Chunk Size**
-- `chunk_500` — chunk_size=500, overlap=100
-- `chunk_1500` — chunk_size=1500, overlap=300
+**Chunk Size** — `chunk_500` (size=500, overlap=100), `chunk_1500` (size=1500, overlap=300)
 
-**Retrieval Depth**
-- `k_3` — retrieve 3 chunks
-- `k_8` — retrieve 8 chunks
+**Retrieval Depth** — `k_3` (retrieve 3 chunks), `k_8` (retrieve 8 chunks)
 
-**Search Algorithm** — MMR balances relevance with diversity. `lambda_mult` controls the trade-off.
-- `search_mmr_balanced` — λ=0.5
-- `search_mmr_relevant` — λ=0.8
-- `search_mmr_diverse` — λ=0.2
+**Search Algorithm** — MMR with `lambda_mult` controlling the relevance–diversity trade-off: `search_mmr_balanced` (λ=0.5), `search_mmr_relevant` (λ=0.8), `search_mmr_diverse` (λ=0.2)
+
+---
 
 ### Results
 
-| Config | Recall | Precision | Faithfulness | Ans. Relevancy | Factual F1 | Sem. Sim | MRR |
-|---|---|---|---|---|---|---|---|
-| **baseline** | 0.600 | 0.608 | 0.393 | 0.567 | 0.403 | 0.708 | 0.778 |
-| chunk_500 | 0.571 | 0.440 | 0.192 | 0.490 | 0.291 | 0.661 | 0.662 |
-| chunk_1500 | 0.667 | 0.374 | 0.260 | 0.559 | 0.263 | 0.657 | 0.789 |
-| k_3 | 0.667 | 0.625 | 0.333 | 0.538 | 0.333 | 0.880 | 0.750 |
-| k_8 | 0.667 | 0.333 | 0.333 | 0.645 | 0.400 | 0.715 | 0.750 |
-| search_mmr_balanced | 0.731 | 0.600 | 0.423 | 0.550 | 0.187 | 0.725 | 0.762 |
-| search_mmr_relevant | 0.808 | 0.596 | 0.222 | 0.520 | 0.224 | 0.687 | 0.770 |
-| search_mmr_diverse | 1.000 | 0.625 | 0.250 | 0.856 | 0.400 | 0.892 | 0.750 |
+---
 
-#### Insights by group
+#### Single-Passage Questions
+> *The answer is fully contained within a single retrieved chunk.*
 
-**Baseline**
-- Strongest factual correctness (0.403) and best faithfulness outside MMR, making it the most reliable all-round config.
+| Config | Recall | Faithfulness | Ans. Relevancy | Factual F1 | Sem. Sim | MRR |
+|---|---|---|---|---|---|---|
+| baseline | 0.762 | 0.781 | 0.573 | 0.508 | 0.688 | 0.698 |
+| chunk_500 | 0.645 | 0.766 | 0.639 | 0.478 | 0.672 | 0.675 |
+| chunk_1500 | 0.773 | 0.798 | 0.635 | 0.520 | 0.709 | 0.798 |
+| k_3 | 0.633 | 0.683 | 0.503 | 0.443 | 0.624 | 0.683 |
+| k_8 | **0.789** | **0.869** | 0.626 | 0.514 | **0.741** | 0.716 |
+| search_mmr_balanced | 0.661 | 0.709 | 0.515 | 0.395 | 0.637 | 0.675 |
+| search_mmr_relevant | 0.791 | 0.726 | 0.596 | 0.488 | 0.680 | 0.702 |
+| search_mmr_diverse | 0.666 | 0.685 | 0.573 | 0.411 | 0.617 | 0.647 |
 
-**Chunk size**
-- `chunk_500` is the weakest config overall — small chunks fragment context and collapse faithfulness to 0.192.
-- `chunk_1500` wins on MRR (0.789) but faithfulness drops, suggesting larger chunks aid retrieval ranking yet introduce LLM-confusing noise.
+This is the pipeline's strongest category. When the answer lives in a single chunk, the generation step is straightforward. Faithfulness scores reflect this: they are consistently high across every config (0.68–0.87), meaning the model almost never hallucinates when the right chunk is present.
 
-**Retrieval depth (k)**
-- `k_3` achieves the highest context precision (0.625) and semantic similarity (0.880) — fewer chunks forces the retriever to be more selective.
-- `k_8` improves answer relevancy (0.645) but halves context precision (0.333), showing that more chunks dilute retrieval quality.
+The main differentiator here is retrieval quality, not generation. Configs that retrieve more or larger chunks surface the answer chunk more reliably, which is why `k_8` and `chunk_1500` lead on recall and MRR. Notably, `k_8` achieves the highest faithfulness (0.869) of any config across any question type.
 
-**MMR search**
-- `mmr_diverse` (λ=0.2) dominates context recall (1.000), answer relevancy (0.856), and semantic similarity (0.892), but at the cost of faithfulness (0.250).
-- `mmr_balanced` (λ=0.5) is the best MMR config for faithfulness (0.423), offering a practical middle ground between diversity and groundedness.
-- Increasing λ toward relevance (`mmr_relevant`, λ=0.8) boosts recall but sharply reduces faithfulness, revealing a recall–groundedness trade-off within MMR.
+Answer relevancy (0.50–0.64) is the weakest metric for this category, suggesting the model occasionally produces answers that are factually correct but not directly responsive to the specific question asked.
 
-#### Key takeaways
+---
 
-- **Recall vs. faithfulness is the central trade-off** — configs that retrieve more (mmr_diverse, k_8) generate less grounded answers.
-- **MMR outperforms similarity search on recall** across all three λ values, confirming it is the better retrieval algorithm for this dataset.
-- **Baseline is a strong default** — no single variant beats it across all metrics simultaneously; improvements are always at the expense of something else.
-- **chunk_500 should be avoided** — it is the only config that degrades performance on every single metric relative to baseline.
-- **`mmr_diverse` is the best config if answer quality (relevancy + semantic similarity) is the priority**; `k_3` or `baseline` if factual precision and faithfulness matter more.
+#### Multi-Passage Questions
+> *The answer must be synthesised across multiple retrieved chunks.*
+
+| Config | Recall | Faithfulness | Ans. Relevancy | Factual F1 | Sem. Sim | MRR |
+|---|---|---|---|---|---|---|
+| baseline | 0.513 | 0.713 | **0.668** | 0.326 | 0.659 | 0.744 |
+| chunk_500 | 0.460 | 0.719 | 0.521 | 0.261 | 0.601 | 0.669 |
+| chunk_1500 | **0.640** | 0.754 | 0.556 | 0.288 | 0.657 | **0.824** |
+| k_3 | 0.379 | 0.671 | 0.577 | 0.294 | 0.588 | 0.725 |
+| k_8 | 0.612 | **0.783** | 0.659 | **0.352** | **0.676** | 0.744 |
+| search_mmr_balanced | 0.397 | 0.706 | 0.594 | 0.242 | 0.626 | 0.691 |
+| search_mmr_relevant | 0.523 | 0.769 | 0.625 | 0.339 | 0.657 | 0.729 |
+| search_mmr_diverse | 0.345 | 0.688 | 0.533 | 0.219 | 0.560 | 0.674 |
+
+This is where the pipeline struggles most. The retriever must simultaneously surface multiple relevant chunks. Recall drops sharply compared to single-passage (0.35–0.64 vs 0.63–0.79), and factual F1 collapses to 0.22–0.35, exposing the core limitation: the model's retrieval coverage for distributed answers is unreliable.
+
+Faithfulness remains relatively high (0.67–0.78) even in this category — the model stays grounded in whatever context it receives. The problem is not hallucination; it is incomplete retrieval. The model answers faithfully from partial evidence, producing answers that are plausible but factually incomplete.
+
+The contrast between factual F1 in single-passage (0.44–0.52) and multi-passage (0.22–0.35) quantifies exactly how much the pipeline degrades when synthesis is required.
+
+Larger chunks (`chunk_1500`) help the most here because a single chunk is more likely to contain a larger portion of a distributed answer, reducing how many chunks the retriever needs to find. This is the one category where chunk size has the most meaningful impact on recall.
+
+---
+
+#### No-Answer Questions (Abstention)
+> *The answer is not in the document. The correct response is "I don't know."*
+
+| Config | Abstention Accuracy | Hallucination Rate |
+|---|---|---|
+| baseline | 0.900 | 0.100 |
+| chunk_500 | 0.900 | 0.100 |
+| chunk_1500 | 0.875 | 0.125 |
+| k_3 | 0.875 | 0.125 |
+| k_8 | 0.875 | 0.125 |
+| search_mmr_balanced | **0.925** | **0.075** |
+| search_mmr_relevant | 0.900 | 0.100 |
+| search_mmr_diverse | **0.925** | **0.075** |
+
+The pipeline handles out-of-scope questions well. But these results reveal a meaningful tension with the previous two categories: the configs that help most with answerable questions tend to hurt here.
+
+Configs that retrieve more content (`k_8`, `chunk_1500`) have a slightly higher hallucination rate (12.5%) compared to baseline (10%).
+
+MMR configs are the exception. `search_mmr_balanced` and `search_mmr_diverse` achieve the lowest hallucination rate (7.5%), outperforming similarity search on this dimension. By promoting diversity in retrieved chunks, MMR may reduce the chance that multiple chunks all weakly point in the same wrong direction.
+
+This category also reveals a fault in the pipeline's self-awareness. A 10–12.5% hallucination rate means the model fabricates an answer roughly 1-in-8 to 1-in-10 times when there is genuinely nothing to find. For applications where out-of-scope queries are common, this is a meaningful failure mode.
+
+---
+
+### Cross-Type Analysis
+
+The three question types expose three distinct failure modes in the pipeline:
+
+| Question Type | Primary failure mode | Root cause |
+|---|---|---|
+| **Single-passage** | Weak answer relevancy | Generation: model answers factually but misses the specific ask |
+| **Multi-passage** | Low recall and factual F1 | Retrieval: distributed answers are only partially covered |
+| **No-answer** | Hallucination on missing context | Generation: model confabulates from weakly relevant chunks |
+
+**The pipeline's biggest unsolved problem is multi-passage retrieval.** The ~0.18 F1 gap between single- and multi-passage questions persists across every config tested. No chunking strategy, retrieval depth, or search algorithm closes it — because the root cause is architectural: FAISS retrieves the top-k most similar chunks independently, with no mechanism to ensure that all pieces of a distributed answer are retrieved together.
+
+**Faithfulness is not the bottleneck.** Across all question types and configs, faithfulness is consistently high (0.67–0.87). The model reliably stays grounded in whatever context it receives. The failures are upstream — in what gets retrieved — not in how the model uses it.
+
+**The abstention–coverage trade-off is real but manageable.** Configs that improve answerable question coverage (`k_8`, `chunk_1500`) introduce a small increase in hallucination rate on no-answer questions.
 
 ---
 
@@ -114,7 +159,7 @@ RAG/
 ├── Jenkinsfile
 │
 ├── multi_doc_chat/
-│   ├── config/                  # YAML config (LLM, retriever, embeddings)
+│   ├── config/                  # YAML config
 │   ├── model/                   # Pydantic schemas
 │   ├── prompts/                 # Prompt templates
 │   ├── src/
@@ -124,10 +169,10 @@ RAG/
 │
 ├── experiments/
 │   ├── configs.py               # Experiment configurations
-│   ├── dataset.json             # 45-question evaluation dataset
+│   ├── dataset.json             # Evaluation dataset (120 questions, 20 documents)
 │   ├── evaluators.py            # RAGAS + MRR scoring
-│   ├── run_experiment.py        # Experiment runner (skip-if-done, save-as-you-go)
-│   └── outputs/                 # Results CSVs
+│   ├── run_experiment.py        # Experiment runner
+│   └── outputs/                 # Experiment Results
 │
 └── templates/index.html
 ```
@@ -138,7 +183,7 @@ RAG/
 
 ```bash
 git clone <repo-url> && cd RAG
-python -m venv venv && source venv/bin/activate  # Windows: venv\Scripts\activate
+python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env  # add GOOGLE_API_KEY, GROQ_API_KEY, HF_TOKEN
 python main.py        # visit http://localhost:8000

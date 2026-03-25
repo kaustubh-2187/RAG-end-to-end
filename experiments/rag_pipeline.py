@@ -17,14 +17,10 @@ from model.models import PromptType, ChatAnswer
 
 
 class EvalConversationalRAG:
-    """
-    Local copy of ConversationalRAG for experiment use only.
-    Adds invoke_with_context() to capture retrieved chunks for RAGAS.
-    """
 
     def __init__(self, session_id: Optional[str], retriever=None, provider_override: str = None):
         try:
-            self.session_id = session_id
+            self.session_id       = session_id
             self.provider_override = provider_override
 
             self.llm = self._load_llm()
@@ -35,8 +31,8 @@ class EvalConversationalRAG:
                 PromptType.CONTEXT_QA.value
             ]
 
-            self.retriever = retriever
-            self.chain = None
+            self.retriever           = retriever
+            self.chain               = None
             self.last_retrieved_docs: list = []
 
             if self.retriever is not None:
@@ -52,7 +48,7 @@ class EvalConversationalRAG:
         index_path: str,
         k: int = 5,
         index_name: str = "index",
-        search_type: str = "mmr",
+        search_type: str = "similarity",
         fetch_k: int = 20,
         lambda_mult: float = 0.5,
         search_kwargs: Optional[Dict[str, Any]] = None,
@@ -61,7 +57,7 @@ class EvalConversationalRAG:
             if not os.path.isdir(index_path):
                 raise FileNotFoundError(f"FAISS index directory not found: {index_path}")
 
-            embeddings = ModelLoader().load_embeddings()
+            embeddings  = ModelLoader().load_embeddings()
             vectorstore = FAISS.load_local(
                 index_path,
                 embeddings,
@@ -72,7 +68,7 @@ class EvalConversationalRAG:
             if search_kwargs is None:
                 search_kwargs = {"k": k}
                 if search_type == "mmr":
-                    search_kwargs["fetch_k"] = fetch_k
+                    search_kwargs["fetch_k"]     = fetch_k
                     search_kwargs["lambda_mult"] = lambda_mult
 
             self.retriever = vectorstore.as_retriever(
@@ -105,7 +101,7 @@ class EvalConversationalRAG:
                 return "no answer generated."
             try:
                 validated = ChatAnswer(answer=str(answer))
-                answer = validated.answer
+                answer    = validated.answer
             except ValidationError as ve:
                 log.error("Invalid chat answer", error=str(ve))
                 raise DocumentPortalException("Invalid chat answer", sys)
@@ -120,14 +116,10 @@ class EvalConversationalRAG:
         user_input: str,
         chat_history: Optional[List[BaseMessage]] = None,
     ) -> dict:
-        """
-        Runs invoke() and also returns chunks the retriever fetched.
-        _format_docs() populates self.last_retrieved_docs during chain execution.
-        Returns {"answer": str, "contexts": List[str]} for RAGAS SingleTurnSample.
-        """
+        """Run the full RAG pipeline. Returns {"answer": str, "contexts": List[str]}."""
         try:
             self.last_retrieved_docs = []
-            answer = self.invoke(user_input, chat_history=chat_history)
+            answer   = self.invoke(user_input, chat_history=chat_history)
             contexts = [
                 getattr(doc, "page_content", str(doc))
                 for doc in self.last_retrieved_docs
@@ -174,8 +166,8 @@ class EvalConversationalRAG:
 
             self.chain = (
                 {
-                    "context": retrieve_docs,
-                    "input": itemgetter("input"),
+                    "context":      retrieve_docs,
+                    "input":        itemgetter("input"),
                     "chat_history": itemgetter("chat_history"),
                 }
                 | self.qa_prompt
